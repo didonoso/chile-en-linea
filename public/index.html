@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chile en Línea - Foro</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="forum-header">
+            <h1>Chile en Línea</h1>
+        </header>
+
+        <main class="forum-container">
+            <!-- Sección de Support -->
+            <div class="forum-section">
+                <div class="section-header">
+                    <h2>Inicio</h2>
+                    <button class="toggle-btn">▼</button>
+                </div>
+
+                <!-- Categoría: General Support -->
+                <div class="category-row">
+                    <div class="category-icon">
+                        <div class="icon-circle"></div>
+                    </div>
+                    
+                    <div class="category-info">
+                        <a href="/category"><h3 class="category-title">Soporte General</h3></a>
+                        <p class="category-description">Soporte general del foro, para cualquier consulta o problema.</p>
+                    </div>
+
+                    <div class="category-stats">
+                        <div class="stat">
+                            <span class="stat-number" id="posts-count">0</span>
+                            <span class="stat-label">Mensajes</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number" id="threads-count">0</span>
+                            <span class="stat-label">Temas</span>
+                        </div>
+                    </div>
+
+                    <div class="category-latest">
+                        <div class="latest-post" id="latest-post">
+                            <a href="#" class="latest-post-title" id="latest-post-title">Cargando...</a>
+                            <div class="latest-post-meta">
+                                <span class="latest-post-time" id="latest-post-time"></span>
+                                <span class="latest-post-author">por <a href="#" id="latest-post-author"></a></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script>
+        // Cargar estadísticas desde la API
+        fetch('/api/stats')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('posts-count').textContent = data.posts.toLocaleString();
+                document.getElementById('threads-count').textContent = data.threads.toLocaleString();
+                
+                // Cargar último post
+                if (data.latestPost) {
+                    const timeAgo = getTimeAgo(new Date(data.latestPost.createdAt));
+                    document.getElementById('latest-post-title').textContent = data.latestPost.title;
+                    document.getElementById('latest-post-time').textContent = timeAgo;
+                    document.getElementById('latest-post-author').textContent = data.latestPost.author;
+                    document.querySelector('.latest-post-author').style.display = '';
+                } else {
+                    document.getElementById('latest-post-title').textContent = 'No hay posts aún';
+                    document.getElementById('latest-post-time').textContent = '';
+                    document.getElementById('latest-post-author').textContent = '';
+                    document.querySelector('.latest-post-author').style.display = 'none';
+                }
+            })
+            .catch(error => console.error('Error cargando estadísticas:', error));
+        
+        // Función para calcular tiempo relativo
+        function getTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            const intervals = {
+                año: 31536000,
+                mes: 2592000,
+                semana: 604800,
+                día: 86400,
+                hora: 3600,
+                minuto: 60
+            };
+            
+            for (const [name, secondsInInterval] of Object.entries(intervals)) {
+                const interval = Math.floor(seconds / secondsInInterval);
+                if (interval >= 1) {
+                    return `hace ${interval} ${name}${interval !== 1 ? 's' : ''}`;
+                }
+            }
+            return 'hace un momento';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuevo Tema - Chile en Línea</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="forum-header">
+            <h1>Chile en Línea</h1>
+        </header>
+
+        <main class="forum-container">
+            <!-- Breadcrumb -->
+            <div class="breadcrumb">
+                <a href="/">Inicio</a> &raquo; 
+                <a href="/category">Soporte General</a> &raquo; 
+                <span>Nuevo Tema</span>
+            </div>
+
+            <!-- New Thread Form -->
+            <div class="new-thread-container">
+                <h2>Nuevo Tema en Soporte General</h2>
+                
+                <form id="new-thread-form">
+                    <div class="form-group">
+                        <label for="thread-title">Título del tema:</label>
+                        <input type="text" id="thread-title" name="title" required maxlength="255" placeholder="Ingrese el título de su tema">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="thread-content">Mensaje:</label>
+                        
+                        <!-- Editor Container -->
+                        <div class="editor-container">
+                            <!-- Emoji Sidebar -->
+                            <div class="emoji-sidebar">
+                                <div class="emoji-grid" id="emoji-grid">
+                                    <span class="emoji-item">😀</span>
+                                    <span class="emoji-item">😃</span>
+                                    <span class="emoji-item">😄</span>
+                                    <span class="emoji-item">😁</span>
+                                    <span class="emoji-item">😆</span>
+                                    <span class="emoji-item">😅</span>
+                                    <span class="emoji-item">😂</span>
+                                    <span class="emoji-item">🤣</span>
+                                    <span class="emoji-item">😊</span>
+                                    <span class="emoji-item">😇</span>
+                                    <span class="emoji-item">🙂</span>
+                                    <span class="emoji-item">🙃</span>
+                                    <span class="emoji-item">😉</span>
+                                    <span class="emoji-item">😌</span>
+                                    <span class="emoji-item">😍</span>
+                                    <span class="emoji-item">🥰</span>
+                                    <span class="emoji-item">😘</span>
+                                    <span class="emoji-item">😗</span>
+                                    <span class="emoji-item">😙</span>
+                                    <span class="emoji-item">😚</span>
+                                    <span class="emoji-item">😋</span>
+                                    <span class="emoji-item">😛</span>
+                                    <span class="emoji-item">😝</span>
+                                    <span class="emoji-item">😜</span>
+                                    <span class="emoji-item">🤪</span>
+                                    <span class="emoji-item">🤨</span>
+                                    <span class="emoji-item">🧐</span>
+                                    <span class="emoji-item">🤓</span>
+                                    <span class="emoji-item">😎</span>
+                                    <span class="emoji-item">🤩</span>
+                                    <span class="emoji-item">🥳</span>
+                                    <span class="emoji-item">😏</span>
+                                    <span class="emoji-item">😒</span>
+                                    <span class="emoji-item">😞</span>
+                                    <span class="emoji-item">😔</span>
+                                    <span class="emoji-item">😟</span>
+                                    <span class="emoji-item">😕</span>
+                                    <span class="emoji-item">🙁</span>
+                                    <span class="emoji-item">☹️</span>
+                                    <span class="emoji-item">😣</span>
+                                    <span class="emoji-item">😖</span>
+                                    <span class="emoji-item">😫</span>
+                                    <span class="emoji-item">😩</span>
+                                    <span class="emoji-item">🥺</span>
+                                    <span class="emoji-item">😢</span>
+                                    <span class="emoji-item">😭</span>
+                                    <span class="emoji-item">😤</span>
+                                    <span class="emoji-item">😠</span>
+                                    <span class="emoji-item">😡</span>
+                                    <span class="emoji-item">🤬</span>
+                                    <span class="emoji-item">👍</span>
+                                    <span class="emoji-item">👎</span>
+                                    <span class="emoji-item">👌</span>
+                                    <span class="emoji-item">✌️</span>
+                                    <span class="emoji-item">🤞</span>
+                                    <span class="emoji-item">🤟</span>
+                                    <span class="emoji-item">🤘</span>
+                                    <span class="emoji-item">🤙</span>
+                                    <span class="emoji-item">👈</span>
+                                    <span class="emoji-item">👉</span>
+                                    <span class="emoji-item">👆</span>
+                                    <span class="emoji-item">👇</span>
+                                    <span class="emoji-item">☝️</span>
+                                    <span class="emoji-item">👏</span>
+                                    <span class="emoji-item">🙌</span>
+                                    <span class="emoji-item">👐</span>
+                                    <span class="emoji-item">🤲</span>
+                                    <span class="emoji-item">🤝</span>
+                                    <span class="emoji-item">🙏</span>
+                                    <span class="emoji-item">✍️</span>
+                                    <span class="emoji-item">💪</span>
+                                    <span class="emoji-item">🦵</span>
+                                    <span class="emoji-item">🦶</span>
+                                    <span class="emoji-item">🦷</span>
+                                    <span class="emoji-item">❤️</span>
+                                    <span class="emoji-item">🧡</span>
+                                    <span class="emoji-item">💛</span>
+                                    <span class="emoji-item">💚</span>
+                                    <span class="emoji-item">💙</span>
+                                    <span class="emoji-item">💜</span>
+                                    <span class="emoji-item">🖤</span>
+                                    <span class="emoji-item">🤍</span>
+                                    <span class="emoji-item">💔</span>
+                                    <span class="emoji-item">💕</span>
+                                    <span class="emoji-item">💞</span>
+                                    <span class="emoji-item">💓</span>
+                                    <span class="emoji-item">💗</span>
+                                    <span class="emoji-item">💖</span>
+                                    <span class="emoji-item">💘</span>
+                                    <span class="emoji-item">💝</span>
+                                    <span class="emoji-item">💟</span>
+                                </div>
+                            </div>
+
+                            <!-- Editor Main Area -->
+                            <div class="editor-main">
+                                <!-- Toolbar -->
+                                <div class="editor-toolbar">
+                                    <button type="button" class="tool-btn" data-command="bold" title="Negrita">
+                                        <strong>B</strong>
+                                    </button>
+                                    <button type="button" class="tool-btn" data-command="italic" title="Cursiva">
+                                        <em>I</em>
+                                    </button>
+                                    <button type="button" class="tool-btn" data-command="underline" title="Subrayado">
+                                        <u>U</u>
+                                    </button>
+                                    <button type="button" class="tool-btn" data-command="strikethrough" title="Tachado">
+                                        <s>S</s>
+                                    </button>
+                                    <span class="toolbar-separator">|</span>
+                                    
+                                    <select class="tool-select" id="font-size">
+                                        <option value="">Tamaño</option>
+                                        <option value="10">10</option>
+                                        <option value="12">12</option>
+                                        <option value="14" selected>14</option>
+                                        <option value="16">16</option>
+                                        <option value="18">18</option>
+                                        <option value="20">20</option>
+                                        <option value="24">24</option>
+                                    </select>
+                                    
+                                    <select class="tool-select" id="text-color">
+                                        <option value="">Color</option>
+                                        <option value="#000000">Negro</option>
+                                        <option value="#ff0000">Rojo</option>
+                                        <option value="#0000ff">Azul</option>
+                                        <option value="#008000">Verde</option>
+                                        <option value="#ffa500">Naranja</option>
+                                        <option value="#800080">Púrpura</option>
+                                    </select>
+                                    
+                                    <span class="toolbar-separator">|</span>
+                                    
+                                    <button type="button" class="tool-btn" data-command="link" title="Insertar enlace">
+                                        🔗
+                                    </button>
+                                    <button type="button" class="tool-btn" data-command="image" title="Insertar imagen">
+                                        🖼️
+                                    </button>
+                                    <button type="button" class="tool-btn" data-command="code" title="Código">
+                                        &lt;/&gt;
+                                    </button>
+                                    
+                                    <span class="toolbar-separator">|</span>
+                                    
+                                    <button type="button" class="tool-btn" data-command="quote" title="Cita">
+                                        "
+                                    </button>
+                                    <button type="button" class="tool-btn" data-command="list" title="Lista">
+                                        ≡
+                                    </button>
+                                </div>
+
+                                <!-- Textarea -->
+                                <textarea id="thread-content" name="content" required rows="15" placeholder="Escriba su mensaje aquí..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-options">
+                        <div class="form-option">
+                            <input type="checkbox" id="subscribe" name="subscribe" checked>
+                            <label for="subscribe">Suscribirme a este tema</label>
+                        </div>
+                        <div class="form-option">
+                            <input type="checkbox" id="signature" name="signature" checked>
+                            <label for="signature">Incluir firma</label>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-submit">Publicar Tema</button>
+                        <button type="button" class="btn-preview">Vista Previa</button>
+                        <a href="/category" class="btn-cancel">Cancelar</a>
+                    </div>
+                </form>
+
+                <div id="error-message" class="error-message" style="display: none;"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Obtener datos del usuario de localStorage (simulación)
+        let currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        
+        // Si no hay usuario, crear uno temporal
+        if (!currentUser) {
+            currentUser = {
+                id: 1,
+                username: 'Usuario Demo'
+            };
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        }
+
+        const textarea = document.getElementById('thread-content');
+
+        // Manejador de emojis
+        document.querySelectorAll('.emoji-item').forEach(emoji => {
+            emoji.addEventListener('click', function() {
+                const emojiText = this.textContent.trim();
+                insertAtCursor(textarea, emojiText);
+            });
+        });
+
+        // Manejador de botones de formato
+        document.querySelectorAll('.tool-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const command = btn.dataset.command;
+                applyFormat(command);
+            });
+        });
+
+        // Manejador de selectores
+        document.getElementById('font-size').addEventListener('change', (e) => {
+            if (e.target.value) {
+                wrapSelection(`[size=${e.target.value}]`, '[/size]');
+                e.target.value = '';
+            }
+        });
+
+        document.getElementById('text-color').addEventListener('change', (e) => {
+            if (e.target.value) {
+                wrapSelection(`[color=${e.target.value}]`, '[/color]');
+                e.target.value = '';
+            }
+        });
+
+        // Función para aplicar formato
+        function applyFormat(command) {
+            const formats = {
+                'bold': ['[b]', '[/b]'],
+                'italic': ['[i]', '[/i]'],
+                'underline': ['[u]', '[/u]'],
+                'strikethrough': ['[s]', '[/s]'],
+                'link': ['[url]', '[/url]'],
+                'image': ['[img]', '[/img]'],
+                'code': ['[code]', '[/code]'],
+                'quote': ['[quote]', '[/quote]'],
+                'list': ['[list]\n[*]', '\n[/list]']
+            };
+
+            if (formats[command]) {
+                wrapSelection(formats[command][0], formats[command][1]);
+            }
+        }
+
+        // Función para envolver la selección con tags
+        function wrapSelection(startTag, endTag) {
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const selectedText = textarea.value.substring(start, end);
+            const replacement = startTag + selectedText + endTag;
+            
+            textarea.value = textarea.value.substring(0, start) + replacement + textarea.value.substring(end);
+            
+            // Posicionar cursor
+            if (selectedText) {
+                textarea.selectionStart = start;
+                textarea.selectionEnd = start + replacement.length;
+            } else {
+                textarea.selectionStart = textarea.selectionEnd = start + startTag.length;
+            }
+            textarea.focus();
+        }
+
+        // Función para insertar en la posición del cursor
+        function insertAtCursor(element, text) {
+            const start = element.selectionStart;
+            const end = element.selectionEnd;
+            element.value = element.value.substring(0, start) + text + element.value.substring(end);
+            element.selectionStart = element.selectionEnd = start + text.length;
+            element.focus();
+        }
+
+        // Manejador del botón de vista previa
+        document.querySelector('.btn-preview').addEventListener('click', (e) => {
+            e.preventDefault();
+            alert('Vista previa - Función por implementar');
+        });
+
+        // Manejar el envío del formulario
+        document.getElementById('new-thread-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const title = document.getElementById('thread-title').value.trim();
+            const content = document.getElementById('thread-content').value.trim();
+            const errorMessage = document.getElementById('error-message');
+            
+            if (!title || !content) {
+                errorMessage.textContent = 'Por favor complete todos los campos';
+                errorMessage.style.display = 'block';
+                return;
+            }
+
+            // Deshabilitar el botón mientras se envía
+            const submitBtn = e.target.querySelector('.btn-submit');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Publicando...';
+
+            try {
+                const response = await fetch('/api/categories/1/posts', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        title: title,
+                        content: content,
+                        authorId: currentUser.id
+                    })
+                });
+
+                if (response.ok) {
+                    const newPost = await response.json();
+                    // Redirigir a la página del thread creado
+                    window.location.href = `/thread?slug=${newPost.slug}`;
+                } else {
+                    const error = await response.json();
+                    errorMessage.textContent = error.message || 'Error al crear el tema';
+                    errorMessage.style.display = 'block';
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Publicar Tema';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                errorMessage.textContent = 'Error de conexión. Por favor intente nuevamente.';
+                errorMessage.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Publicar Tema';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">Thread - Chile en Línea</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="forum-header">
+            <h1>Chile en Línea</h1>
+        </header>
+
+        <main class="forum-container">
+            <!-- Breadcrumb -->
+            <div class="breadcrumb">
+                <a href="/">Inicio</a> &raquo; 
+                <a href="/category">Soporte General</a> &raquo; 
+                <span id="breadcrumb-title">Cargando...</span>
+            </div>
+
+            <!-- Thread Header -->
+            <div class="thread-header-section">
+                <h1 id="thread-title">Cargando...</h1>
+            </div>
+
+            <!-- Thread Content -->
+            <div class="thread-content-container" id="thread-content">
+                <div class="loading">Cargando tema...</div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Obtener el slug del thread desde la URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const slug = urlParams.get('slug');
+
+        if (!slug) {
+            document.getElementById('thread-content').innerHTML = '<div class="error">Thread no encontrado</div>';
+        } else {
+            // Cargar el thread
+            fetch(`/api/posts/${slug}`)
+                .then(response => response.json())
+                .then(post => {
+                    // Actualizar título de la página
+                    document.getElementById('page-title').textContent = post.title + ' - Chile en Línea';
+                    document.getElementById('breadcrumb-title').textContent = post.title;
+                    document.getElementById('thread-title').textContent = post.title;
+
+                    // Formatear fecha
+                    const postDate = new Date(post.createdAt);
+                    const formattedDate = postDate.toLocaleDateString('es-CL', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+
+                    // Formatear fecha de registro del usuario
+                    const joinedDate = new Date(post.author.stats.joinedDate);
+                    const formattedJoinedDate = joinedDate.toLocaleDateString('es-CL', {
+                        year: 'numeric',
+                        month: 'short'
+                    });
+
+                    // Renderizar el contenido del post
+                    const threadContent = `
+                        <div class="post-container">
+                            <div class="post-author-sidebar">
+                                <div class="author-avatar">
+                                    ${post.author.username.substring(0, 2).toUpperCase()}
+                                </div>
+                                <div class="author-name">
+                                    <a href="/user/${post.author.username}">${post.author.username}</a>
+                                </div>
+                                <div class="author-badge">FORMER STAFF</div>
+                                <div class="author-stats">
+                                    <div>Posts: ${post.author.stats.totalPosts.toLocaleString()}</div>
+                                    <div>Threads: ${post.author.stats.totalThreads.toLocaleString()}</div>
+                                    <div>Joined: ${formattedJoinedDate}</div>
+                                </div>
+                            </div>
+                            
+                            <div class="post-content-main">
+                                <div class="post-header">
+                                    <div class="post-date">${formattedDate}</div>
+                                    <div class="post-number">#1</div>
+                                </div>
+                                
+                                <div class="post-body">
+                                    ${formatContent(post.content)}
+                                </div>
+                                
+                                <div class="post-footer">
+                                    <div class="post-actions">
+                                        <button class="action-btn">Citar</button>
+                                        <button class="action-btn">Reportar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    document.getElementById('thread-content').innerHTML = threadContent;
+                })
+                .catch(error => {
+                    console.error('Error cargando thread:', error);
+                    document.getElementById('thread-content').innerHTML = '<div class="error">Error al cargar el tema</div>';
+                });
+        }
+
+        // Función para formatear el contenido con BBCode básico
+        function formatContent(content) {
+            let formatted = content;
+            
+            // Convertir BBCode a HTML
+            formatted = formatted.replace(/\[b\](.*?)\[\/b\]/g, '<strong>$1</strong>');
+            formatted = formatted.replace(/\[i\](.*?)\[\/i\]/g, '<em>$1</em>');
+            formatted = formatted.replace(/\[u\](.*?)\[\/u\]/g, '<u>$1</u>');
+            formatted = formatted.replace(/\[s\](.*?)\[\/s\]/g, '<s>$1</s>');
+            formatted = formatted.replace(/\[url\](.*?)\[\/url\]/g, '<a href="$1" target="_blank">$1</a>');
+            formatted = formatted.replace(/\[img\](.*?)\[\/img\]/g, '<img src="$1" alt="Image" style="max-width: 100%;">');
+            formatted = formatted.replace(/\[code\](.*?)\[\/code\]/gs, '<pre><code>$1</code></pre>');
+            formatted = formatted.replace(/\[quote\](.*?)\[\/quote\]/gs, '<blockquote>$1</blockquote>');
+            formatted = formatted.replace(/\[color=(.*?)\](.*?)\[\/color\]/g, '<span style="color: $1">$2</span>');
+            formatted = formatted.replace(/\[size=(.*?)\](.*?)\[\/size\]/g, '<span style="font-size: $1px">$2</span>');
+            
+            // Convertir saltos de línea
+            formatted = formatted.replace(/\n/g, '<br>');
+            
+            return formatted;
+        }
+    </script>
+</body>
+</html>
