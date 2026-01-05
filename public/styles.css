@@ -31,6 +31,41 @@ body {
     font-weight: 600;
 }
 
+/* Welcome Banner */
+.welcome-banner {
+    background: linear-gradient(to right, #ffd89b 0%, #19547b 100%);
+    color: #333;
+    padding: 15px 30px;
+    text-align: center;
+    border-left: 5px solid #ff9800;
+    margin-bottom: 0;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.welcome-icon {
+    font-size: 24px;
+}
+
+.welcome-text {
+    color: white;
+    font-weight: 500;
+}
+
+.welcome-link {
+    color: #fff;
+    font-weight: bold;
+    text-decoration: underline;
+    transition: color 0.2s;
+}
+
+.welcome-link:hover {
+    color: #ffd89b;
+}
+
 /* Forum Container */
 .forum-container {
     background: white;
