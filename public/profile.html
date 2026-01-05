@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil de Usuario - Chile en Línea</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/auth.js" defer></script>
+</head>
+<body>
+    <div class="container">
+        <header class="forum-header">
+            <h1><a href="/" style="color: white; text-decoration: none;">Chile en Línea</a></h1>
+        </header>
+
+        <!-- Banner de bienvenida -->
+        <div id="welcome-banner" class="welcome-banner">
+            <div class="welcome-left">
+                <span class="welcome-icon">👋</span>
+                <span id="welcome-text" class="welcome-text">
+                    ¡Bienvenido a Chile en Línea! 
+                    <a href="/register" class="welcome-link">Regístrate</a> 
+                    o 
+                    <a href="/login" class="welcome-link">Inicia sesión</a> 
+                    para participar en la comunidad
+                </span>
+            </div>
+            <div class="welcome-right">
+                <a href="/members" class="welcome-action">👥 Lista de Miembros</a>
+                <button id="logout-btn" class="welcome-action" style="display: none; background: none; border: none; color: #fff; cursor: pointer; font-size: 14px;">🚪 Cerrar Sesión</button>
+            </div>
+        </div>
+
+        <main class="forum-container">
+            <!-- Breadcrumb -->
+            <div class="breadcrumb">
+                <a href="/">Chile en Línea</a> &raquo; 
+                <a href="/members">Lista de Miembros</a> &raquo; 
+                <span id="breadcrumb-username">Usuario</span>
+            </div>
+
+            <!-- Profile Section -->
+            <div class="profile-mybb-container">
+                <!-- User Header -->
+                <div class="profile-header">
+                    <div class="profile-avatar-section">
+                        <div id="profile-avatar" class="avatar-circle-large">US</div>
+                    </div>
+                    <div class="profile-info-section">
+                        <h2 class="profile-username-title" id="profile-username">Cargando...</h2>
+                        <div class="user-group">(Miembro)</div>
+                        <div class="user-stars">
+                            <span class="star">⭐</span>
+                            <span class="star">⭐</span>
+                            <span class="star">⭐</span>
+                        </div>
+                        <div class="profile-meta">
+                            <div><strong>Fecha de Registro:</strong> <span id="meta-joined">-</span></div>
+                            <div><strong>Hora Local:</strong> <span id="meta-localtime">-</span></div>
+                            <div><strong>Estado:</strong> <span class="status-online">En línea</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Forum Info Table -->
+                <div class="profile-section">
+                    <div class="profile-section-header">
+                        Información del Foro de <span id="username-possessive">Usuario</span>
+                    </div>
+                    <table class="profile-info-table">
+                        <tr>
+                            <td class="info-label">Registrado:</td>
+                            <td class="info-value" id="info-joined">-</td>
+                        </tr>
+                        <tr>
+                            <td class="info-label">Última Visita:</td>
+                            <td class="info-value" id="info-lastvisit">-</td>
+                        </tr>
+                        <tr>
+                            <td class="info-label">Total de Mensajes:</td>
+                            <td class="info-value">
+                                <span id="info-totalposts">0</span> 
+                                (<span id="info-postsperday">0</span> mensajes por día | 
+                                <span id="info-postspercent">0</span> por ciento del total de mensajes)
+                                <br><a href="#" class="info-link">(Ver Todos los Mensajes)</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="info-label">Total de Temas:</td>
+                            <td class="info-value">
+                                <span id="info-totalthreads">0</span>
+                                (<span id="info-threadsperday">0</span> temas por día | 
+                                <span id="info-threadspercent">0</span> por ciento del total de temas)
+                                <br><a href="#" class="info-link">(Ver Todos los Temas)</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="info-label">Tiempo en Línea:</td>
+                            <td class="info-value" id="info-timeonline">No disponible</td>
+                        </tr>
+                        <tr>
+                            <td class="info-label">Miembros Referidos:</td>
+                            <td class="info-value">0</td>
+                        </tr>
+                        <tr>
+                            <td class="info-label">Reputación:</td>
+                            <td class="info-value">
+                                <span id="info-reputation">0</span> 
+                                <a href="#" class="info-link">[Detalles]</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="info-label">Nivel de Advertencia:</td>
+                            <td class="info-value"><span id="info-warning">0</span>%</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- Contact Details -->
+                <div class="profile-section">
+                    <div class="profile-section-header">
+                        Detalles de Contacto de <span id="username-possessive2">Usuario</span>
+                    </div>
+                    <table class="profile-info-table">
+                        <tr>
+                            <td class="info-label">Email:</td>
+                            <td class="info-value">
+                                <a href="#" class="info-link">Enviar un email</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="info-label">Mensaje Privado:</td>
+                            <td class="info-value">
+                                <a href="#" class="info-link">Enviar un mensaje privado</a>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- Recent Posts -->
+                <div class="profile-section">
+                    <div class="profile-section-header">Threads Recientes</div>
+                    <div id="recent-posts-container" style="padding: 15px;">
+                        <div class="loading-message">Cargando threads recientes...</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const pathParts = window.location.pathname.split('/');
+        const username = pathParts[pathParts.length - 1];
+        loadProfile();
+
+        async function loadProfile() {
+            try {
+                const response = await fetch(`/api/user/${username}`, { credentials: 'include' });
+                if (!response.ok) { showError(); return; }
+                const profile = await response.json();
+                displayProfile(profile);
+            } catch (error) {
+                console.error('Error cargando perfil:', error);
+                showError();
+            }
+        }
+
+        function displayProfile(profile) {
+            document.getElementById('breadcrumb-username').textContent = profile.username;
+            document.title = `Perfil de ${profile.username} - Chile en Línea`;
+            
+            const avatarInitials = profile.username.substring(0, 2).toUpperCase();
+            document.getElementById('profile-avatar').textContent = avatarInitials;
+            document.getElementById('profile-username').textContent = profile.username;
+            document.getElementById('username-possessive').textContent = profile.username;
+            document.getElementById('username-possessive2').textContent = profile.username;
+
+            const joinedDate = new Date(profile.joinedDate);
+            const joinedFormatted = joinedDate.toLocaleDateString('es-CL', {
+                year: 'numeric', month: 'long', day: 'numeric'
+            });
+
+            const lastLoginDate = new Date(profile.lastLogin);
+            const now = new Date();
+            const diffMinutes = Math.floor((now - lastLoginDate) / 1000 / 60);
+            
+            let lastVisitText;
+            if (diffMinutes < 1) lastVisitText = 'Menos de 1 minuto atrás';
+            else if (diffMinutes < 60) lastVisitText = `Hace ${diffMinutes} minuto${diffMinutes !== 1 ? 's' : ''}`;
+            else if (diffMinutes < 1440) {
+                const hours = Math.floor(diffMinutes / 60);
+                lastVisitText = `Hace ${hours} hora${hours !== 1 ? 's' : ''}`;
+            } else {
+                lastVisitText = lastLoginDate.toLocaleDateString('es-CL', {
+                    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                });
+            }
+
+            const localTime = now.toLocaleString('es-CL', {
+                year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
+            });
+
+            const daysSinceJoined = Math.floor((now - joinedDate) / 1000 / 60 / 60 / 24) || 1;
+            const postsPerDay = (profile.stats.totalPosts / daysSinceJoined).toFixed(2);
+            const threadsPerDay = (profile.stats.totalThreads / daysSinceJoined).toFixed(2);
+
+            document.getElementById('meta-joined').textContent = joinedFormatted;
+            document.getElementById('meta-localtime').textContent = localTime;
+            document.getElementById('info-joined').textContent = joinedFormatted;
+            document.getElementById('info-lastvisit').textContent = lastVisitText;
+            document.getElementById('info-totalposts').textContent = profile.stats.totalPosts.toLocaleString();
+            document.getElementById('info-postsperday').textContent = postsPerDay;
+            document.getElementById('info-postspercent').textContent = '0';
+            document.getElementById('info-totalthreads').textContent = profile.stats.totalThreads.toLocaleString();
+            document.getElementById('info-threadsperday').textContent = threadsPerDay;
+            document.getElementById('info-threadspercent').textContent = '0';
+            document.getElementById('info-reputation').textContent = profile.stats.reputation;
+            document.getElementById('info-warning').textContent = profile.stats.warningLevel;
+
+            displayRecentPosts(profile.recentPosts);
+        }
+
+        function displayRecentPosts(posts) {
+            const container = document.getElementById('recent-posts-container');
+            if (posts.length === 0) {
+                container.innerHTML = '<div style="color: #666; padding: 20px 0;">Este usuario no ha publicado ningún thread todavía.</div>';
+                return;
+            }
+
+            container.innerHTML = posts.map(post => {
+                const postDate = new Date(post.createdAt).toLocaleDateString('es-CL', {
+                    day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                });
+
+                return `
+                    <div class="recent-post-item">
+                        <div class="post-icon">📄</div>
+                        <div class="post-content">
+                            <div class="post-title">
+                                <a href="/thread?slug=${post.slug}" class="post-link">${post.title}</a>
+                            </div>
+                            <div class="post-meta">
+                                <span class="post-category">${post.category.name}</span>
+                                <span class="post-separator">•</span>
+                                <span class="post-stats">${post._count.comments} respuesta${post._count.comments !== 1 ? 's' : ''}</span>
+                                <span class="post-separator">•</span>
+                                <span class="post-stats">${post.views.toLocaleString()} vista${post.views !== 1 ? 's' : ''}</span>
+                                <span class="post-separator">•</span>
+                                <span class="post-date">${postDate}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function showError() {
+            document.getElementById('profile-username').textContent = 'Usuario no encontrado';
+            document.getElementById('recent-posts-container').innerHTML = 
+                '<div class="error-message">No se pudo cargar el perfil del usuario.</div>';
+        }
+    </script>
+</body>
+</html>

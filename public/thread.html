@@ -12,6 +12,24 @@
             <h1>Chile en Línea</h1>
         </header>
 
+        <!-- Banner de bienvenida -->
+        <div id="welcome-banner" class="welcome-banner">
+            <div class="welcome-left">
+                <span class="welcome-icon">👋</span>
+                <span id="welcome-text" class="welcome-text">
+                    ¡Bienvenido a Chile en Línea! 
+                    <a href="/register" class="welcome-link">Regístrate</a> 
+                    o 
+                    <a href="/login" class="welcome-link">Inicia sesión</a> 
+                    para participar en la comunidad
+                </span>
+            </div>
+            <div class="welcome-right">
+                <a href="/members" class="welcome-action">👥 Lista de Miembros</a>
+                <button id="logout-btn" class="welcome-action" style="display: none; background: none; border: none; color: #fff; cursor: pointer; font-size: 14px;">🚪 Cerrar Sesión</button>
+            </div>
+        </div>
+
         <main class="forum-container">
             <!-- Breadcrumb -->
             <div class="breadcrumb">
@@ -29,13 +47,37 @@
             <div class="thread-content-container" id="thread-content">
                 <div class="loading">Cargando tema...</div>
             </div>
+
+            <!-- Comments Section -->
+            <div id="comments-section"></div>
+
+            <!-- Reply Form -->
+            <div class="reply-form-container" id="reply-form-container" style="display: none;">
+                <div class="section-header">
+                    <h2>Responder al tema</h2>
+                </div>
+                <div class="reply-form-content">
+                    <textarea id="reply-content" placeholder="Escribe tu respuesta..."></textarea>
+                    <div class="reply-actions">
+                        <button id="submit-reply" class="btn-primary">Publicar Respuesta</button>
+                        <button id="cancel-reply" class="btn-secondary">Cancelar</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reply Button -->
+            <div class="reply-button-container" id="reply-button-container" style="display: none; margin-bottom: 30px;">
+                <button id="show-reply-form" class="btn-reply">💬 Responder</button>
+            </div>
         </main>
     </div>
 
+    <script src="/auth.js"></script>
     <script>
         // Obtener el slug del thread desde la URL
         const urlParams = new URLSearchParams(window.location.search);
         const slug = urlParams.get('slug');
+        let currentPostId = null;
 
         if (!slug) {
             document.getElementById('thread-content').innerHTML = '<div class="error">Thread no encontrado</div>';
@@ -105,11 +147,148 @@
                     `;
 
                     document.getElementById('thread-content').innerHTML = threadContent;
+                    currentPostId = post.id;
+                    
+                    // Cargar comentarios
+                    loadComments(post.id);
+                    
+                    // Mostrar botón de responder
+                    document.getElementById('reply-button-container').style.display = 'block';
                 })
                 .catch(error => {
                     console.error('Error cargando thread:', error);
                     document.getElementById('thread-content').innerHTML = '<div class="error">Error al cargar el tema</div>';
                 });
+        }
+
+        // Mostrar formulario de respuesta
+        document.getElementById('show-reply-form').addEventListener('click', () => {
+            document.getElementById('reply-form-container').style.display = 'block';
+            document.getElementById('reply-button-container').style.display = 'none';
+            document.getElementById('reply-content').focus();
+        });
+
+        // Cancelar respuesta
+        document.getElementById('cancel-reply').addEventListener('click', () => {
+            document.getElementById('reply-form-container').style.display = 'none';
+            document.getElementById('reply-button-container').style.display = 'block';
+            document.getElementById('reply-content').value = '';
+        });
+
+        // Publicar respuesta
+        document.getElementById('submit-reply').addEventListener('click', async () => {
+            const content = document.getElementById('reply-content').value.trim();
+            
+            if (!content) {
+                alert('Por favor escribe una respuesta');
+                return;
+            }
+
+            if (!currentPostId) {
+                alert('Error: No se pudo identificar el post');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/posts/${currentPostId}/comments`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        content: content,
+                        authorId: 1 // Usuario demo
+                    })
+                });
+
+                if (response.ok) {
+                    alert('¡Respuesta publicada exitosamente!');
+                    document.getElementById('reply-content').value = '';
+                    document.getElementById('reply-form-container').style.display = 'none';
+                    document.getElementById('reply-button-container').style.display = 'block';
+                    // Recargar página para ver la nueva respuesta
+                    location.reload();
+                } else {
+                    alert('Error al publicar la respuesta');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al publicar la respuesta');
+            }
+        });
+
+        // Función para cargar comentarios
+        async function loadComments(postId) {
+            try {
+                const response = await fetch(`/api/posts/${postId}/comments`);
+                const comments = await response.json();
+                
+                const commentsSection = document.getElementById('comments-section');
+                
+                if (comments.length === 0) {
+                    commentsSection.innerHTML = '';
+                    return;
+                }
+                
+                let commentsHTML = '';
+                comments.forEach((comment, index) => {
+                    const commentDate = new Date(comment.createdAt);
+                    const formattedCommentDate = commentDate.toLocaleDateString('es-CL', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    
+                    const joinedDate = new Date(comment.author.createdAt);
+                    const formattedJoinedDate = joinedDate.toLocaleDateString('es-CL', {
+                        year: 'numeric',
+                        month: 'short'
+                    });
+                    
+                    commentsHTML += `
+                        <div class="post-container">
+                            <div class="post-author-sidebar">
+                                <div class="author-avatar">
+                                    ${comment.author.username.substring(0, 2).toUpperCase()}
+                                </div>
+                                <div class="author-name">
+                                    <a href="/user/${comment.author.username}">${comment.author.username}</a>
+                                </div>
+                                <div class="author-badge">FORMER STAFF</div>
+                                <div class="author-stats">
+                                    <div>Posts: ${comment.author.stats.totalPosts.toLocaleString()}</div>
+                                    <div>Threads: ${comment.author.stats.totalThreads.toLocaleString()}</div>
+                                    <div>Joined: ${formattedJoinedDate}</div>
+                                </div>
+                            </div>
+                            
+                            <div class="post-content-main">
+                                <div class="post-header">
+                                    <div class="post-date">${formattedCommentDate}</div>
+                                    <div class="post-number">#${index + 2}</div>
+                                </div>
+                                
+                                <div class="post-body">
+                                    ${formatContent(comment.content)}
+                                </div>
+                                
+                                <div class="post-footer">
+                                    <div class="post-actions">
+                                        <button class="action-btn">Citar</button>
+                                        <button class="action-btn">Reportar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                commentsSection.innerHTML = commentsHTML;
+            } catch (error) {
+                console.error('Error cargando comentarios:', error);
+            }
         }
 
         // Función para formatear el contenido con BBCode básico

@@ -5,12 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Soporte General - Chile en Línea</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="/auth.js" defer></script>
 </head>
 <body>
     <div class="container">
         <header class="forum-header">
             <h1>Chile en Línea</h1>
         </header>
+
+        <!-- Banner de bienvenida -->
+        <div id="welcome-banner" class="welcome-banner">
+            <div class="welcome-left">
+                <span class="welcome-icon">👋</span>
+                <span id="welcome-text" class="welcome-text">
+                    ¡Bienvenido a Chile en Línea! 
+                    <a href="/register" class="welcome-link">Regístrate</a> 
+                    o 
+                    <a href="/login" class="welcome-link">Inicia sesión</a> 
+                    para participar en la comunidad
+                </span>
+            </div>
+            <div class="welcome-right">
+                <a href="/members" class="welcome-action">👥 Lista de Miembros</a>
+                <button id="logout-btn" class="welcome-action" style="display: none; background: none; border: none; color: #fff; cursor: pointer; font-size: 14px;">🚪 Cerrar Sesión</button>
+            </div>
+        </div>
 
         <main class="forum-container">
             <!-- Breadcrumb -->

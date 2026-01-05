@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Miembros - Chile en Línea</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="/auth.js" defer></script>
+</head>
+<body>
+    <div class="container">
+        <header class="forum-header">
+            <h1><a href="/" style="color: white; text-decoration: none;">Chile en Línea</a></h1>
+        </header>
+
+        <!-- Banner de bienvenida -->
+        <div id="welcome-banner" class="welcome-banner">
+            <div class="welcome-left">
+                <span class="welcome-icon">👋</span>
+                <span id="welcome-text" class="welcome-text">
+                    ¡Bienvenido a Chile en Línea! 
+                    <a href="/register" class="welcome-link">Regístrate</a> 
+                    o 
+                    <a href="/login" class="welcome-link">Inicia sesión</a> 
+                    para participar en la comunidad
+                </span>
+            </div>
+            <div class="welcome-right">
+                <a href="/members" class="welcome-action">👥 Lista de Miembros</a>
+                <button id="logout-btn" class="welcome-action" style="display: none; background: none; border: none; color: #fff; cursor: pointer; font-size: 14px;">🚪 Cerrar Sesión</button>
+            </div>
+        </div>
+
+        <main class="forum-container">
+            <!-- Breadcrumb -->
+            <div class="breadcrumb">
+                <a href="/">Chile en Línea</a> &raquo; <span>Lista de Miembros</span>
+            </div>
+
+            <!-- Pagination Top -->
+            <div class="pagination-container" id="pagination-top">
+                <span class="pagination-label">Páginas (<span id="total-pages-top">1</span>):</span>
+                <div class="pagination-buttons" id="pagination-buttons-top"></div>
+            </div>
+
+            <!-- Members Table Section -->
+            <div class="forum-section">
+                <div class="section-header">
+                    <h2>Lista de Miembros</h2>
+                </div>
+                
+                <div class="members-table-container">
+                    <table class="members-table">
+                        <thead>
+                            <tr>
+                                <th class="col-avatar">Avatar</th>
+                                <th class="col-username">Usuario</th>
+                                <th class="col-joined">Registrado</th>
+                                <th class="col-lastvisit">Última Visita</th>
+                                <th class="col-postcount">Posts</th>
+                            </tr>
+                        </thead>
+                        <tbody id="members-tbody">
+                            <tr>
+                                <td colspan="5" class="loading-cell">Cargando miembros...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Pagination Bottom -->
+            <div class="pagination-container" id="pagination-bottom">
+                <span class="pagination-label">Páginas (<span id="total-pages-bottom">1</span>):</span>
+                <div class="pagination-buttons" id="pagination-buttons-bottom"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let currentPage = 1;
+        const limit = 20;
+
+        // Cargar miembros al iniciar
+        loadMembers(currentPage);
+
+        async function loadMembers(page) {
+            try {
+                const response = await fetch(`/api/members?page=${page}&limit=${limit}`, {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    showError();
+                    return;
+                }
+
+                const data = await response.json();
+                displayMembers(data.users);
+                displayPagination(data.pagination);
+                currentPage = page;
+
+            } catch (error) {
+                console.error('Error cargando miembros:', error);
+                showError();
+            }
+        }
+
+        function displayMembers(users) {
+            const tbody = document.getElementById('members-tbody');
+            
+            if (users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="no-members">No hay miembros registrados</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = users.map(user => {
+                const joinedDate = new Date(user.joined).toLocaleDateString('es-CL', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+
+                const lastVisitDate = new Date(user.lastVisit).toLocaleDateString('es-CL', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                const avatarInitials = user.username.substring(0, 2).toUpperCase();
+
+                return `
+                    <tr class="member-row">
+                        <td class="member-avatar">
+                            <div class="avatar-circle">${avatarInitials}</div>
+                        </td>
+                        <td class="member-username">
+                            <a href="/user/${user.username}" class="username-link">${user.username}</a>
+                        </td>
+                        <td class="member-joined">${joinedDate}</td>
+                        <td class="member-lastvisit">${lastVisitDate}</td>
+                        <td class="member-postcount">${user.postCount.toLocaleString()}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function displayPagination(pagination) {
+            const { currentPage, totalPages, hasNext, hasPrev } = pagination;
+
+            // Actualizar contadores
+            document.getElementById('total-pages-top').textContent = totalPages;
+            document.getElementById('total-pages-bottom').textContent = totalPages;
+
+            // Generar botones de paginación
+            const buttonsHTML = generatePaginationButtons(currentPage, totalPages, hasNext, hasPrev);
+            document.getElementById('pagination-buttons-top').innerHTML = buttonsHTML;
+            document.getElementById('pagination-buttons-bottom').innerHTML = buttonsHTML;
+        }
+
+        function generatePaginationButtons(current, total, hasNext, hasPrev) {
+            let buttons = [];
+
+            // Botón primera página
+            if (current > 1) {
+                buttons.push(`<button class="page-btn" onclick="loadMembers(1)">1</button>`);
+            } else {
+                buttons.push(`<span class="page-btn active">1</span>`);
+            }
+
+            // Mostrar páginas cercanas
+            const range = 2;
+            const start = Math.max(2, current - range);
+            const end = Math.min(total - 1, current + range);
+
+            if (start > 2) {
+                buttons.push(`<span class="page-ellipsis">...</span>`);
+            }
+
+            for (let i = start; i <= end; i++) {
+                if (i === current) {
+                    buttons.push(`<span class="page-btn active">${i}</span>`);
+                } else {
+                    buttons.push(`<button class="page-btn" onclick="loadMembers(${i})">${i}</button>`);
+                }
+            }
+
+            if (end < total - 1) {
+                buttons.push(`<span class="page-ellipsis">...</span>`);
+            }
+
+            // Botón última página
+            if (total > 1) {
+                if (current === total) {
+                    buttons.push(`<span class="page-btn active">${total}</span>`);
+                } else {
+                    buttons.push(`<button class="page-btn" onclick="loadMembers(${total})">${total}</button>`);
+                }
+            }
+
+            // Botón Next
+            if (hasNext) {
+                buttons.push(`<button class="page-btn next-btn" onclick="loadMembers(${current + 1})">Siguiente »</button>`);
+            }
+
+            return buttons.join('');
+        }
+
+        function showError() {
+            const tbody = document.getElementById('members-tbody');
+            tbody.innerHTML = '<tr><td colspan="5" class="error-cell">Error al cargar los miembros</td></tr>';
+        }
+    </script>
+</body>
+</html>

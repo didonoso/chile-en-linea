@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - Chile en Línea</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="forum-header">
+            <h1><a href="/" style="color: white; text-decoration: none;">Chile en Línea</a></h1>
+        </header>
+
+        <main class="forum-container">
+            <div class="breadcrumb">
+                <a href="/">Inicio</a> &raquo; <span>Iniciar Sesión</span>
+            </div>
+
+            <div class="auth-container">
+                <h2>Iniciar Sesión</h2>
+                
+                <div id="error-message" class="error-alert" style="display: none;"></div>
+                <div id="success-message" class="success-alert" style="display: none;"></div>
+
+                <form id="login-form" class="auth-form">
+                    <div class="form-group">
+                        <label for="usernameOrEmail">Usuario o Email</label>
+                        <input 
+                            type="text" 
+                            id="usernameOrEmail" 
+                            name="usernameOrEmail" 
+                            required 
+                            minlength="3"
+                            placeholder="Ingresa tu usuario o email"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Contraseña</label>
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password" 
+                            required 
+                            minlength="6"
+                            placeholder="Ingresa tu contraseña"
+                        >
+                    </div>
+
+                    <button type="submit" class="btn-primary auth-button">Iniciar Sesión</button>
+                </form>
+
+                <div class="auth-footer">
+                    <p>¿No tienes cuenta? <a href="/register">Regístrate aquí</a></p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const form = document.getElementById('login-form');
+        const errorDiv = document.getElementById('error-message');
+        const successDiv = document.getElementById('success-message');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Ocultar mensajes previos
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+
+            const usernameOrEmail = document.getElementById('usernameOrEmail').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        usernameOrEmail,
+                        password
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    successDiv.textContent = '¡Login exitoso! Redirigiendo...';
+                    successDiv.style.display = 'block';
+                    
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 1000);
+                } else {
+                    errorDiv.textContent = data.message || 'Error al iniciar sesión';
+                    errorDiv.style.display = 'block';
+                }
+            } catch (error) {
+                errorDiv.textContent = 'Error de conexión. Por favor intenta de nuevo.';
+                errorDiv.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

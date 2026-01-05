@@ -1,4 +1,4 @@
-import { Controller, Get, Res, Param, Post, Body, HttpException, HttpStatus, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Res, Param, Post, Body, HttpException, HttpStatus, ParseIntPipe, Query } from '@nestjs/common';
 import { AppService } from './app.service';
 import { Response } from 'express';
 import { join } from 'path';
@@ -44,11 +44,52 @@ export class AppController {
   }
 
   /**
+   * Renderiza la página de login
+   */
+  @Get('login')
+  getLogin(@Res() res: Response) {
+    return res.sendFile(join(__dirname, '..', 'public', 'login.html'));
+  }
+
+  /**
+   * Renderiza la página de registro
+   */
+  @Get('register')
+  getRegister(@Res() res: Response) {
+    return res.sendFile(join(__dirname, '..', 'public', 'register.html'));
+  }
+
+  /**
+   * Renderiza la página de lista de miembros
+   */
+  @Get('members')
+  getMembers(@Res() res: Response) {
+    return res.sendFile(join(__dirname, '..', 'public', 'members.html'));
+  }
+
+  /**
+   * Renderiza la página de perfil de usuario
+   */
+  @Get('user/:username')
+  getUserProfile(@Res() res: Response, @Param('username') username: string) {
+    return res.sendFile(join(__dirname, '..', 'public', 'profile.html'));
+  }
+
+  /**
    * Sirve el archivo CSS principal
    */
   @Get('styles.css')
   getStyles(@Res() res: Response) {
     return res.sendFile(join(__dirname, '..', 'public', 'styles.css'));
+  }
+
+  /**
+   * Sirve el archivo JavaScript de autenticación
+   */
+  @Get('auth.js')
+  getAuthScript(@Res() res: Response) {
+    res.setHeader('Content-Type', 'application/javascript');
+    return res.sendFile(join(__dirname, '..', 'public', 'auth.js'));
   }
 
   /**
@@ -132,5 +173,71 @@ export class AppController {
     }
 
     return post;
+  }
+
+  /**
+   * Obtiene los comentarios de un post
+   * @param postId ID del post
+   * @returns Lista de comentarios con información del autor
+   */
+  @Get('api/posts/:id/comments')
+  async getPostComments(@Param('id', ParseIntPipe) postId: number) {
+    return this.appService.getPostComments(postId);
+  }
+
+  /**
+   * Crea un comentario en un post
+   * @param postId ID del post
+   * @param commentData Datos del comentario (content, authorId)
+   * @returns Comentario creado
+   */
+  @Post('api/posts/:id/comments')
+  async createComment(
+    @Param('id', ParseIntPipe) postId: number,
+    @Body() commentData: { content: string; authorId: number }
+  ) {
+    if (!commentData.content || commentData.content.trim().length === 0) {
+      throw new HttpException('El contenido es requerido', HttpStatus.BAD_REQUEST);
+    }
+
+    if (commentData.content.length > 50000) {
+      throw new HttpException('El contenido no puede exceder 50000 caracteres', HttpStatus.BAD_REQUEST);
+    }
+
+    if (!commentData.authorId || commentData.authorId <= 0) {
+      throw new HttpException('ID de autor inválido', HttpStatus.BAD_REQUEST);
+    }
+
+    return this.appService.createComment(postId, commentData);
+  }
+
+  /**
+   * Obtiene la lista de miembros con paginación
+   * @param page Número de página (opcional, default: 1)
+   * @param limit Cantidad de miembros por página (opcional, default: 20)
+   * @returns Lista de miembros con paginación
+   */
+  @Get('api/members')
+  async getMembersList(
+    @Query('page', new ParseIntPipe({ optional: true })) page: number = 1,
+    @Query('limit', new ParseIntPipe({ optional: true })) limit: number = 20
+  ) {
+    return this.appService.getMembers(page, limit);
+  }
+
+  /**
+   * Obtiene el perfil de un usuario por username
+   * @param username Nombre de usuario
+   * @returns Perfil del usuario con estadísticas
+   */
+  @Get('api/user/:username')
+  async getUserProfileData(@Param('username') username: string) {
+    const profile = await this.appService.getUserProfile(username);
+    
+    if (!profile) {
+      throw new HttpException('Usuario no encontrado', HttpStatus.NOT_FOUND);
+    }
+    
+    return profile;
   }
 }
