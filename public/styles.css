@@ -104,6 +104,36 @@ body {
     padding: 5px 10px;
 }
 
+/* Board Statistics */
+.board-statistics {
+    background: #f9f9f9;
+    padding: 20px 30px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.board-statistics p {
+    margin: 10px 0;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #555;
+}
+
+.board-statistics strong {
+    color: #0f4c75;
+    font-weight: 600;
+}
+
+.board-statistics a {
+    color: #0f4c75;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.board-statistics a:hover {
+    color: #1976d2;
+    text-decoration: underline;
+}
+
 /* Category Row */
 .category-row {
     display: grid;

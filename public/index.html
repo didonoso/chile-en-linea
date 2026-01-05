@@ -65,6 +65,19 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Board Statistics -->
+            <div class="forum-section">
+                <div class="section-header">
+                    <h2>Estadísticas del Foro</h2>
+                </div>
+                <div class="board-statistics">
+                    <p>Nuestros miembros han creado un total de <strong id="total-posts-stat">0</strong> mensajes en <strong id="total-threads-stat">0</strong> temas.</p>
+                    <p>Actualmente tenemos <strong id="total-members-stat">0</strong> miembros registrados.</p>
+                    <p>Por favor dale la bienvenida a nuestro miembro más reciente, <a href="#" id="newest-member-link"><strong id="newest-member-stat">Cargando...</strong></a></p>
+                    <p>La mayor cantidad de usuarios en línea fue <strong id="most-online-stat">0</strong> el <strong id="most-online-date">--</strong></p>
+                </div>
+            </div>
         </main>
     </div>
     <script>
@@ -87,6 +100,17 @@
                     document.getElementById('latest-post-time').textContent = '';
                     document.getElementById('latest-post-author').textContent = '';
                     document.querySelector('.latest-post-author').style.display = 'none';
+                }
+
+                // Cargar estadísticas del foro
+                if (data.boardStats) {
+                    document.getElementById('total-posts-stat').textContent = data.boardStats.totalPosts.toLocaleString();
+                    document.getElementById('total-threads-stat').textContent = data.boardStats.totalThreads.toLocaleString();
+                    document.getElementById('total-members-stat').textContent = data.boardStats.totalMembers.toLocaleString();
+                    document.getElementById('newest-member-stat').textContent = data.boardStats.newestMember || 'N/A';
+                    document.getElementById('newest-member-link').href = `/user/${data.boardStats.newestMember}`;
+                    document.getElementById('most-online-stat').textContent = data.boardStats.mostOnline || 0;
+                    document.getElementById('most-online-date').textContent = data.boardStats.mostOnlineDate || '--';
                 }
             })
             .catch(error => console.error('Error cargando estadísticas:', error));
