@@ -455,6 +455,13 @@ export class AppService {
           avatar: true,
           createdAt: true,
           lastLoginAt: true,
+          userGroup: {
+            select: {
+              id: true,
+              name: true,
+              color: true
+            }
+          },
           _count: {
             select: {
               posts: true,
@@ -494,6 +501,7 @@ export class AppService {
         avatar: user.avatar,
         joinedDate: user.createdAt,
         lastLogin: user.lastLoginAt || user.createdAt,
+        userGroup: user.userGroup,
         stats: {
           totalThreads: user._count.posts,
           totalPosts: user._count.posts + user._count.comments,
@@ -507,4 +515,58 @@ export class AppService {
       throw error;
     }
   }
+
+  /**
+   * Obtiene todos los grupos de usuario
+   * @returns Lista de grupos con contador de usuarios
+   */
+  async getUserGroups() {
+    try {
+      const groups = await this.prisma.userGroup.findMany({
+        include: {
+          _count: {
+            select: { users: true }
+          }
+        },
+        orderBy: {
+          order: 'asc'
+        }
+      });
+
+      return groups.map(group => ({
+        id: group.id,
+        name: group.name,
+        description: group.description,
+        order: group.order,
+        color: group.color,
+        isDefault: group.isDefault,
+        userCount: group._count.users
+      }));
+    } catch (error) {
+      this.logger.error('Error obteniendo grupos de usuario', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene un grupo de usuario por ID
+   * @param id ID del grupo
+   * @returns Información del grupo
+   */
+  async getUserGroupById(id: number) {
+    try {
+      return await this.prisma.userGroup.findUnique({
+        where: { id },
+        include: {
+          _count: {
+            select: { users: true }
+          }
+        }
+      });
+    } catch (error) {
+      this.logger.error(`Error obteniendo grupo de usuario: ${id}`, error);
+      throw error;
+    }
+  }
 }
+

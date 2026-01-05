@@ -10,6 +10,20 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Modelo de Grupo de Usuario
+model UserGroup {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  order       Int      @default(0)
+  color       String?  // Color para el nombre del grupo
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  users       User[]
+}
+
 // Modelo de Usuario
 model User {
   id          Int       @id @default(autoincrement())
@@ -21,9 +35,14 @@ model User {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   
+  userGroupId Int       @default(1) // Por defecto: Registrados
+  userGroup   UserGroup @relation(fields: [userGroupId], references: [id])
+  
   posts     Post[]
   comments  Comment[]
   likes     Like[]
+  
+  @@index([userGroupId])
 }
 
 // Modelo de Categoría

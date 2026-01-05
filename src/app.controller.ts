@@ -240,4 +240,38 @@ export class AppController {
     
     return profile;
   }
+
+  /**
+   * Renderiza la página de grupos de usuario
+   */
+  @Get('groups')
+  getUserGroups(@Res() res: Response) {
+    return res.sendFile(join(__dirname, '..', 'public', 'groups.html'));
+  }
+
+  /**
+   * Obtiene todos los grupos de usuario
+   * @returns Lista de grupos con contador de usuarios
+   */
+  @Get('api/groups')
+  async getUserGroupsList() {
+    return this.appService.getUserGroups();
+  }
+
+  /**
+   * Obtiene información de un grupo específico
+   * @param id ID del grupo
+   * @returns Información del grupo
+   */
+  @Get('api/groups/:id')
+  async getUserGroupById(@Param('id', ParseIntPipe) id: number) {
+    const group = await this.appService.getUserGroupById(id);
+    
+    if (!group) {
+      throw new HttpException('Grupo no encontrado', HttpStatus.NOT_FOUND);
+    }
+    
+    return group;
+  }
 }
+
