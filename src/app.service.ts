@@ -390,6 +390,7 @@ export class AppService {
             id: true,
             username: true,
             avatar: true,
+            lastLoginAt: true,
             createdAt: true,
             updatedAt: true,
             _count: {
@@ -417,7 +418,7 @@ export class AppService {
         username: user.username,
         avatar: user.avatar,
         joined: user.createdAt,
-        lastVisit: user.updatedAt,
+        lastVisit: user.lastLoginAt || user.createdAt,
         postCount: user._count.posts + user._count.comments
       }));
 

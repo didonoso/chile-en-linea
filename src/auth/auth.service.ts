@@ -43,6 +43,7 @@ export class AuthService {
         email: registerDto.email,
         username: registerDto.username,
         password: hashedPassword,
+        lastLoginAt: new Date(),
       },
       select: {
         id: true,
@@ -104,6 +105,12 @@ export class AuthService {
       throw new UnauthorizedException('Credenciales inválidas');
     }
 
+    // Actualizar lastLoginAt
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { lastLoginAt: new Date() }
+    });
+
     const tokens = await this.generateTokens(user.id, user.username);
 
     return {
@@ -156,7 +163,9 @@ export class AuthService {
         email: true,
         username: true,
         avatar: true,
+        lastLoginAt: true,
         createdAt: true,
+        updatedAt: true,
       },
     });
 
