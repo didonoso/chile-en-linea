@@ -77,24 +77,29 @@ npm run start:dev
 
 ## 📡 Endpoints
 
-### Users
-- `GET /users` - Listar usuarios
-- `GET /users/:id` - Ver usuario
-- `POST /users` - Crear usuario
-
 ### Categories
-- `GET /categories` - Listar categorías
-- `GET /categories/:id` - Ver categoría con posts
-- `POST /categories` - Crear categoría
+- `GET /api/categories` - Listar todas las categorías con contador de posts
+
+### Stats
+- `GET /api/stats` - Obtener estadísticas del foro (threads, posts, último post)
 
 ### Posts
-- `GET /posts` - Listar posts
-- `GET /posts?categoryId=1` - Posts por categoría
-- `GET /posts/:id` - Ver post con comentarios
-- `POST /posts` - Crear post
+- `GET /api/categories/:id/posts` - Obtener posts de una categoría específica
+- `POST /api/categories/:id/posts` - Crear nuevo post/thread
+  - Body: `{ title: string, content: string, authorId: number }`
+- `GET /api/posts/:slug` - Obtener post completo por slug con estadísticas del autor
 
 ### Comments
-- `GET /posts/:postId/comments` - Comentarios de un post
-- `POST /posts/:postId/comments` - Crear comentario
+- `GET /api/posts/:id/comments` - Obtener comentarios de un post con estadísticas
+- `POST /api/posts/:id/comments` - Crear comentario en un post
+  - Body: `{ content: string, authorId: number }`
 
+## 🎯 Próximos pasos
+
+- [ ] Implementar autenticación (JWT)
+- [ ] Agregar DTOs y validación
+- [ ] Sistema de likes
+- [ ] Paginación
+- [ ] Búsqueda
+- [ ] Upload de imágenes
 Foro CL
