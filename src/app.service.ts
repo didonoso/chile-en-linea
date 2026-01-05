@@ -373,4 +373,68 @@ export class AppService {
       throw error;
     }
   }
+
+  /**
+   * Obtiene lista de miembros con paginación
+   * @param page Número de página
+   * @param limit Cantidad de miembros por página
+   * @returns Lista de usuarios con estadísticas
+   */
+  async getMembers(page: number = 1, limit: number = 20) {
+    try {
+      const skip = (page - 1) * limit;
+
+      const [users, totalUsers] = await Promise.all([
+        this.prisma.user.findMany({
+          select: {
+            id: true,
+            username: true,
+            avatar: true,
+            createdAt: true,
+            updatedAt: true,
+            _count: {
+              select: {
+                posts: true,
+                comments: true
+              }
+            }
+          },
+          orderBy: {
+            createdAt: 'desc'
+          },
+          skip,
+          take: limit
+        }),
+        this.prisma.user.count()
+      ]);
+
+      // Calcular total de páginas
+      const totalPages = Math.ceil(totalUsers / limit);
+
+      // Formatear usuarios con conteo de posts
+      const formattedUsers = users.map(user => ({
+        id: user.id,
+        username: user.username,
+        avatar: user.avatar,
+        joined: user.createdAt,
+        lastVisit: user.updatedAt,
+        postCount: user._count.posts + user._count.comments
+      }));
+
+      return {
+        users: formattedUsers,
+        pagination: {
+          currentPage: page,
+          totalPages,
+          totalUsers,
+          limit,
+          hasNext: page < totalPages,
+          hasPrev: page > 1
+        }
+      };
+    } catch (error) {
+      this.logger.error('Error obteniendo miembros', error);
+      throw error;
+    }
+  }
 }
