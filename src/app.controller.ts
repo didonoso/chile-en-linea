@@ -1,4 +1,4 @@
-import { Controller, Get, Res } from '@nestjs/common';
+import { Controller, Get, Res, Param, Post, Body } from '@nestjs/common';
 import { AppService } from './app.service';
 import { Response } from 'express';
 import { join } from 'path';
@@ -10,6 +10,21 @@ export class AppController {
   @Get()
   getIndex(@Res() res: Response) {
     return res.sendFile(join(__dirname, '..', 'public', 'index.html'));
+  }
+
+  @Get('category')
+  getCategory(@Res() res: Response) {
+    return res.sendFile(join(__dirname, '..', 'public', 'category.html'));
+  }
+
+  @Get('new-thread')
+  getNewThread(@Res() res: Response) {
+    return res.sendFile(join(__dirname, '..', 'public', 'new-thread.html'));
+  }
+
+  @Get('thread')
+  getThread(@Res() res: Response) {
+    return res.sendFile(join(__dirname, '..', 'public', 'thread.html'));
   }
 
   @Get('styles.css')
@@ -25,5 +40,20 @@ export class AppController {
   @Get('api/stats')
   async getStats() {
     return this.appService.getStats();
+  }
+
+  @Get('api/categories/:id/posts')
+  async getCategoryPosts(@Param('id') id: string) {
+    return this.appService.getCategoryPosts(parseInt(id));
+  }
+
+  @Post('api/categories/:id/posts')
+  async createPost(@Param('id') id: string, @Body() postData: any) {
+    return this.appService.createPost(parseInt(id), postData);
+  }
+
+  @Get('api/posts/:slug')
+  async getPostBySlug(@Param('slug') slug: string) {
+    return this.appService.getPostBySlug(slug);
   }
 }

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soporte General - Chile en Línea</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="forum-header">
+            <h1>Chile en Línea</h1>
+        </header>
+
+        <main class="forum-container">
+            <!-- Breadcrumb -->
+            <div class="breadcrumb">
+                <a href="/">Inicio</a> &raquo; <span>Soporte General</span>
+            </div>
+
+            <!-- Category Header -->
+            <div class="category-header">
+                <div class="category-header-info">
+                    <h2>Soporte General</h2>
+                    <p>Soporte general del foro, para cualquier consulta o problema.</p>
+                </div>
+                <a href="/new-thread" class="btn-new-thread">Nuevo Tema</a>
+            </div>
+
+            <!-- Threads List -->
+            <div class="threads-container">
+                <div class="threads-header">
+                    <div class="threads-col-icon"></div>
+                    <div class="threads-col-title">Tema</div>
+                    <div class="threads-col-author">Autor</div>
+                    <div class="threads-col-replies">Respuestas</div>
+                    <div class="threads-col-views">Vistas</div>
+                    <div class="threads-col-lastpost">Último mensaje</div>
+                </div>
+
+                <div id="threads-list">
+                    <div class="loading">Cargando temas...</div>
+                </div>
+
+                <div id="no-threads" style="display: none;" class="no-content">
+                    No hay temas en esta categoría aún.
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Cargar threads de la categoría
+        fetch('/api/categories/1/posts')
+            .then(response => response.json())
+            .then(posts => {
+                const threadsList = document.getElementById('threads-list');
+                const noThreads = document.getElementById('no-threads');
+                
+                if (posts.length === 0) {
+                    threadsList.style.display = 'none';
+                    noThreads.style.display = 'block';
+                    return;
+                }
+
+                threadsList.innerHTML = posts.map(post => {
+                    const createdDate = new Date(post.createdAt);
+                    const timeAgo = getTimeAgo(createdDate);
+                    
+                    return `
+                        <div class="thread-row">
+                            <div class="thread-icon">
+                                <div class="icon-circle ${post.isPinned ? 'pinned' : ''}"></div>
+                            </div>
+                            <div class="thread-title">
+                                <a href="/thread?slug=${post.slug}">${post.title}</a>
+                                ${post.isPinned ? '<span class="badge-pinned">Fijado</span>' : ''}
+                                ${post.isLocked ? '<span class="badge-locked">Cerrado</span>' : ''}
+                            </div>
+                            <div class="thread-author">
+                                <a href="/user/${post.author.username}">${post.author.username}</a>
+                            </div>
+                            <div class="thread-replies">
+                                ${post._count.comments}
+                            </div>
+                            <div class="thread-views">
+                                ${post.views.toLocaleString()}
+                            </div>
+                            <div class="thread-lastpost">
+                                <div class="lastpost-time">${timeAgo}</div>
+                                <div class="lastpost-author">por <a href="/user/${post.author.username}">${post.author.username}</a></div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            })
+            .catch(error => {
+                console.error('Error cargando threads:', error);
+                document.getElementById('threads-list').innerHTML = '<div class="error">Error al cargar los temas</div>';
+            });
+
+        // Función para calcular tiempo relativo
+        function getTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            const intervals = {
+                año: 31536000,
+                mes: 2592000,
+                semana: 604800,
+                día: 86400,
+                hora: 3600,
+                minuto: 60
+            };
+            
+            for (const [name, secondsInInterval] of Object.entries(intervals)) {
+                const interval = Math.floor(seconds / secondsInInterval);
+                if (interval >= 1) {
+                    return `hace ${interval} ${name}${interval !== 1 ? 's' : ''}`;
+                }
+            }
+            return 'hace un momento';
+        }
+    </script>
+</body>
+</html>
