@@ -77,6 +77,15 @@ npm run start:dev
 
 ## 📡 Endpoints
 
+### Auth
+- `POST /api/auth/register` - Registro de nuevo usuario
+  - Body: `{ email: string, username: string, password: string }`
+- `POST /api/auth/login` - Iniciar sesión
+  - Body: `{ usernameOrEmail: string, password: string }`
+- `POST /api/auth/logout` - Cerrar sesión (requiere autenticación)
+- `GET /api/auth/me` - Obtener usuario actual (requiere autenticación)
+- `GET /api/auth/check` - Verificar si está autenticado
+
 ### Categories
 - `GET /api/categories` - Listar todas las categorías con contador de posts
 
@@ -94,12 +103,4 @@ npm run start:dev
 - `POST /api/posts/:id/comments` - Crear comentario en un post
   - Body: `{ content: string, authorId: number }`
 
-## 🎯 Próximos pasos
-
-- [ ] Implementar autenticación (JWT)
-- [ ] Agregar DTOs y validación
-- [ ] Sistema de likes
-- [ ] Paginación
-- [ ] Búsqueda
-- [ ] Upload de imágenes
 Foro CL
