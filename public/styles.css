@@ -36,14 +36,25 @@ body {
     background: linear-gradient(to right, #ffd89b 0%, #19547b 100%);
     color: #333;
     padding: 15px 30px;
-    text-align: center;
     border-left: 5px solid #ff9800;
     margin-bottom: 0;
     font-size: 15px;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.welcome-left {
+    display: flex;
+    align-items: center;
     gap: 10px;
+}
+
+.welcome-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
 }
 
 .welcome-icon {
@@ -64,6 +75,36 @@ body {
 
 .welcome-link:hover {
     color: #ffd89b;
+}
+
+.welcome-action {
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    transition: all 0.3s;
+    white-space: nowrap;
+}
+
+.welcome-action:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffd89b;
+}
+
+@media (max-width: 768px) {
+    .welcome-banner {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .welcome-right {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
 }
 
 /* Forum Container */
