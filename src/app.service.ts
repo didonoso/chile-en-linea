@@ -438,4 +438,73 @@ export class AppService {
       throw error;
     }
   }
+
+  /**
+   * Obtiene el perfil completo de un usuario por username
+   * @param username Nombre de usuario
+   * @returns Perfil del usuario con estadísticas
+   */
+  async getUserProfile(username: string) {
+    try {
+      const user = await this.prisma.user.findFirst({
+        where: { username },
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          avatar: true,
+          createdAt: true,
+          lastLoginAt: true,
+          _count: {
+            select: {
+              posts: true,
+              comments: true
+            }
+          }
+        }
+      });
+
+      if (!user) {
+        return null;
+      }
+
+      // Obtener posts recientes del usuario
+      const recentPosts = await this.prisma.post.findMany({
+        where: { authorId: user.id },
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          createdAt: true,
+          views: true,
+          _count: {
+            select: { comments: true }
+          },
+          category: {
+            select: { name: true, slug: true }
+          }
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 10
+      });
+
+      return {
+        id: user.id,
+        username: user.username,
+        avatar: user.avatar,
+        joinedDate: user.createdAt,
+        lastLogin: user.lastLoginAt || user.createdAt,
+        stats: {
+          totalThreads: user._count.posts,
+          totalPosts: user._count.posts + user._count.comments,
+          reputation: 0,
+          warningLevel: 0
+        },
+        recentPosts
+      };
+    } catch (error) {
+      this.logger.error(`Error obteniendo perfil de usuario: ${username}`, error);
+      throw error;
+    }
+  }
 }

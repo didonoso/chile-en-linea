@@ -1497,3 +1497,293 @@ body {
     }
 }
 
+/* ============================================
+   PROFILE PAGE STYLES (MyBB Design)
+   ============================================ */
+
+.profile-mybb-container {
+    margin-top: 20px;
+}
+
+/* Profile Header */
+.profile-header {
+    display: flex;
+    gap: 20px;
+    background: white;
+    border: 1px solid #ccc;
+    padding: 20px;
+    margin-bottom: 15px;
+}
+
+.profile-avatar-section {
+    flex-shrink: 0;
+}
+
+.avatar-circle-large {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 42px;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.profile-info-section {
+    flex: 1;
+}
+
+.profile-username-title {
+    margin: 0 0 5px 0;
+    font-size: 24px;
+    color: #008800;
+    font-weight: bold;
+}
+
+.user-group {
+    color: #666;
+    font-size: 13px;
+    margin-bottom: 8px;
+}
+
+.user-stars {
+    margin-bottom: 15px;
+}
+
+.user-stars .star {
+    font-size: 16px;
+    margin-right: 2px;
+}
+
+.profile-meta {
+    font-size: 13px;
+    color: #333;
+    line-height: 1.8;
+}
+
+.profile-meta strong {
+    color: #555;
+}
+
+.status-online {
+    color: #008800;
+    font-weight: 600;
+}
+
+/* Profile Sections */
+.profile-section {
+    background: white;
+    border: 1px solid #ccc;
+    margin-bottom: 15px;
+}
+
+.profile-section-header {
+    background: linear-gradient(to bottom, #0f5c8e 0%, #0f5c8e 100%);
+    color: white;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-weight: bold;
+    border-bottom: 1px solid #0a4872;
+}
+
+/* Profile Info Table */
+.profile-info-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.profile-info-table tr {
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.profile-info-table tr:last-child {
+    border-bottom: none;
+}
+
+.profile-info-table td {
+    padding: 10px 12px;
+    font-size: 13px;
+    vertical-align: top;
+}
+
+.info-label {
+    font-weight: bold;
+    color: #555;
+    width: 180px;
+    white-space: nowrap;
+}
+
+.info-value {
+    color: #333;
+}
+
+.info-link {
+    color: #0066cc;
+    text-decoration: none;
+    font-size: 12px;
+}
+
+.info-link:hover {
+    text-decoration: underline;
+}
+
+/* Profile Posts Table */
+.profile-posts-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.profile-posts-table thead {
+    background: #c8dcea;
+}
+
+.profile-posts-table th {
+    padding: 8px 10px;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+    border-bottom: 1px solid #a8c4d4;
+}
+
+.profile-posts-table tbody tr {
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.profile-posts-table tbody tr:hover {
+    background: #f9f9f9;
+}
+
+.profile-posts-table td {
+    padding: 10px;
+    font-size: 13px;
+    color: #333;
+}
+
+.post-title-link {
+    color: #0066cc;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.post-title-link:hover {
+    text-decoration: underline;
+}
+
+/* Recent Posts Items */
+.recent-post-item {
+    display: flex;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.recent-post-item:last-child {
+    border-bottom: none;
+}
+
+.post-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+    padding-top: 2px;
+}
+
+.post-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.post-title {
+    margin-bottom: 6px;
+}
+
+.post-link {
+    color: #0066cc;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    display: inline-block;
+    word-break: break-word;
+}
+
+.post-link:hover {
+    text-decoration: underline;
+}
+
+.post-meta {
+    font-size: 12px;
+    color: #666;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+}
+
+.post-category {
+    color: #0066cc;
+    font-weight: 500;
+}
+
+.post-separator {
+    color: #ccc;
+}
+
+.post-stats,
+.post-date {
+    color: #666;
+}
+
+.loading-message,
+.error-message {
+    padding: 20px;
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+}
+
+.error-message {
+    color: #d9534f;
+}
+
+/* Responsive Profile */
+@media (max-width: 768px) {
+    .profile-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .avatar-circle-large {
+        width: 80px;
+        height: 80px;
+        font-size: 34px;
+    }
+
+    .profile-username-title {
+        font-size: 20px;
+    }
+
+    .info-label {
+        width: auto;
+        display: block;
+        padding-bottom: 5px;
+    }
+
+    .profile-info-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .profile-posts-table {
+        font-size: 12px;
+    }
+
+    .profile-posts-table th,
+    .profile-posts-table td {
+        padding: 6px;
+    }
+}

@@ -68,6 +68,14 @@ export class AppController {
   }
 
   /**
+   * Renderiza la página de perfil de usuario
+   */
+  @Get('user/:username')
+  getUserProfile(@Res() res: Response, @Param('username') username: string) {
+    return res.sendFile(join(__dirname, '..', 'public', 'profile.html'));
+  }
+
+  /**
    * Sirve el archivo CSS principal
    */
   @Get('styles.css')
@@ -215,5 +223,21 @@ export class AppController {
     @Query('limit', new ParseIntPipe({ optional: true })) limit: number = 20
   ) {
     return this.appService.getMembers(page, limit);
+  }
+
+  /**
+   * Obtiene el perfil de un usuario por username
+   * @param username Nombre de usuario
+   * @returns Perfil del usuario con estadísticas
+   */
+  @Get('api/user/:username')
+  async getUserProfileData(@Param('username') username: string) {
+    const profile = await this.appService.getUserProfile(username);
+    
+    if (!profile) {
+      throw new HttpException('Usuario no encontrado', HttpStatus.NOT_FOUND);
+    }
+    
+    return profile;
   }
 }
