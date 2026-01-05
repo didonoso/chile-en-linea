@@ -133,4 +133,40 @@ export class AppController {
 
     return post;
   }
+
+  /**
+   * Obtiene los comentarios de un post
+   * @param postId ID del post
+   * @returns Lista de comentarios con información del autor
+   */
+  @Get('api/posts/:id/comments')
+  async getPostComments(@Param('id', ParseIntPipe) postId: number) {
+    return this.appService.getPostComments(postId);
+  }
+
+  /**
+   * Crea un comentario en un post
+   * @param postId ID del post
+   * @param commentData Datos del comentario (content, authorId)
+   * @returns Comentario creado
+   */
+  @Post('api/posts/:id/comments')
+  async createComment(
+    @Param('id', ParseIntPipe) postId: number,
+    @Body() commentData: { content: string; authorId: number }
+  ) {
+    if (!commentData.content || commentData.content.trim().length === 0) {
+      throw new HttpException('El contenido es requerido', HttpStatus.BAD_REQUEST);
+    }
+
+    if (commentData.content.length > 50000) {
+      throw new HttpException('El contenido no puede exceder 50000 caracteres', HttpStatus.BAD_REQUEST);
+    }
+
+    if (!commentData.authorId || commentData.authorId <= 0) {
+      throw new HttpException('ID de autor inválido', HttpStatus.BAD_REQUEST);
+    }
+
+    return this.appService.createComment(postId, commentData);
+  }
 }

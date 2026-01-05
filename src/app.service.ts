@@ -253,4 +253,110 @@ export class AppService {
       .replace(/^-+|-+$/g, '') // Eliminar guiones al inicio y final
       .slice(0, 100); // Limitar longitud
   }
+
+  /**
+   * Obtiene los comentarios de un post con estadísticas del autor
+   * @param postId ID del post
+   * @returns Lista de comentarios
+   */
+  async getPostComments(postId: number) {
+    try {
+      const comments = await this.prisma.comment.findMany({
+        where: { postId },
+        include: {
+          author: {
+            select: { 
+              username: true, 
+              avatar: true,
+              createdAt: true
+            }
+          }
+        },
+        orderBy: { createdAt: 'asc' }
+      });
+
+      // Obtener estadísticas de cada autor en paralelo
+      const commentsWithStats = await Promise.all(
+        comments.map(async (comment) => {
+          const [authorPosts, authorComments] = await Promise.all([
+            this.prisma.post.count({ where: { authorId: comment.authorId } }),
+            this.prisma.comment.count({ where: { authorId: comment.authorId } })
+          ]);
+
+          return {
+            ...comment,
+            author: {
+              ...comment.author,
+              stats: {
+                totalPosts: authorPosts + authorComments,
+                totalThreads: authorPosts,
+                joinedDate: comment.author.createdAt
+              }
+            }
+          };
+        })
+      );
+
+      return commentsWithStats;
+    } catch (error) {
+      this.logger.error(`Error obteniendo comentarios del post ${postId}`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Crea un comentario en un post
+   * @param postId ID del post
+   * @param commentData Datos del comentario
+   * @returns Comentario creado
+   */
+  async createComment(postId: number, commentData: { content: string; authorId: number }) {
+    try {
+      const sanitizedContent = commentData.content.trim().slice(0, 50000);
+
+      // Verificar que el post existe
+      const post = await this.prisma.post.findUnique({
+        where: { id: postId }
+      });
+
+      if (!post) {
+        throw new Error('Post no encontrado');
+      }
+
+      // Verificar o crear usuario si no existe
+      let user = await this.prisma.user.findUnique({
+        where: { id: commentData.authorId }
+      });
+
+      if (!user) {
+        user = await this.prisma.user.create({
+          data: {
+            id: commentData.authorId,
+            email: `demo${commentData.authorId}@example.com`,
+            username: 'Usuario Demo',
+            password: 'demo123'
+          }
+        });
+      }
+
+      const comment = await this.prisma.comment.create({
+        data: {
+          content: sanitizedContent,
+          postId: postId,
+          authorId: commentData.authorId
+        },
+        include: {
+          author: {
+            select: { username: true }
+          }
+        }
+      });
+
+      this.logger.log(`Comentario creado en post ${postId} por usuario ${commentData.authorId}`);
+      return comment;
+    } catch (error) {
+      this.logger.error('Error creando comentario', error);
+      throw error;
+    }
+  }
 }

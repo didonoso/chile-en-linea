@@ -36,6 +36,7 @@ body {
     background: white;
     border-radius: 0 0 8px 8px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding-bottom: 60px;
 }
 
 /* Section Header */
@@ -943,6 +944,94 @@ body {
 }
 
 .action-btn:hover {
+    background: #e0e0e0;
+}
+
+/* Reply Form */
+.reply-button-container {
+    margin: 30px 0 50px 0;
+    text-align: center;
+}
+
+.btn-reply {
+    background: linear-gradient(to bottom, #0f4c75, #0a3a5c);
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 5px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-reply:hover {
+    background: linear-gradient(to bottom, #1565a8, #0f4c75);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+}
+
+.reply-form-container {
+    margin-top: 20px;
+}
+
+.reply-form-content {
+    background: white;
+    padding: 20px;
+    border-radius: 5px;
+}
+
+.reply-form-content textarea {
+    width: 100%;
+    min-height: 200px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    resize: vertical;
+    box-sizing: border-box;
+}
+
+.reply-form-content textarea:focus {
+    outline: none;
+    border-color: #0f4c75;
+}
+
+.reply-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.btn-primary {
+    background: linear-gradient(to bottom, #0f4c75, #0a3a5c);
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(to bottom, #1565a8, #0f4c75);
+}
+
+.btn-secondary {
+    background: #f5f5f5;
+    color: #666;
+    border: 1px solid #ddd;
+    padding: 10px 25px;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-secondary:hover {
     background: #e0e0e0;
 }
 
