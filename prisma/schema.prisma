@@ -56,6 +56,11 @@ model Post {
   
   comments   Comment[]
   likes      Like[]
+
+  @@index([categoryId])
+  @@index([authorId])
+  @@index([createdAt])
+  @@index([isPinned, createdAt])
 }
 
 // Modelo de Comentario
@@ -70,6 +75,10 @@ model Comment {
   
   postId    Int
   post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+  @@index([authorId])
+  @@index([createdAt])
 }
 
 // Modelo de Like
