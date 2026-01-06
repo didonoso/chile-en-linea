@@ -568,5 +568,90 @@ export class AppService {
       throw error;
     }
   }
+
+  /**
+   * Obtiene los usuarios de un grupo específico
+   * @param groupId ID del grupo
+   * @returns Lista de usuarios en el grupo
+   */
+  async getUsersByGroup(groupId: number) {
+    try {
+      const users = await this.prisma.user.findMany({
+        where: { userGroupId: groupId },
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          avatar: true,
+          createdAt: true,
+          lastLoginAt: true,
+          userGroup: {
+            select: {
+              id: true,
+              name: true,
+              color: true
+            }
+          }
+        },
+        orderBy: { createdAt: 'desc' }
+      });
+
+      return users;
+    } catch (error) {
+      this.logger.error(`Error obteniendo usuarios del grupo: ${groupId}`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Cambia el grupo de un usuario (solo para administradores)
+   * @param userId ID del usuario a modificar
+   * @param newGroupId ID del nuevo grupo
+   * @param adminId ID del administrador que realiza el cambio
+   * @returns Usuario actualizado
+   */
+  async changeUserGroup(userId: number, newGroupId: number, adminId: number) {
+    try {
+      // Verificar que el admin es realmente administrador (userGroupId: 4)
+      const admin = await this.prisma.user.findUnique({
+        where: { id: adminId },
+        select: { userGroupId: true }
+      });
+
+      if (!admin || admin.userGroupId !== 4) {
+        throw new Error('No tienes permisos para realizar esta acción');
+      }
+
+      // Verificar que el grupo existe
+      const group = await this.prisma.userGroup.findUnique({
+        where: { id: newGroupId }
+      });
+
+      if (!group) {
+        throw new Error('El grupo no existe');
+      }
+
+      // Actualizar el grupo del usuario
+      const updatedUser = await this.prisma.user.update({
+        where: { id: userId },
+        data: { userGroupId: newGroupId },
+        include: {
+          userGroup: {
+            select: {
+              id: true,
+              name: true,
+              color: true
+            }
+          }
+        }
+      });
+
+      this.logger.log(`Admin ${adminId} cambió el grupo del usuario ${userId} al grupo ${newGroupId}`);
+      return updatedUser;
+    } catch (error) {
+      this.logger.error(`Error cambiando grupo de usuario: ${userId}`, error);
+      throw error;
+    }
+  }
 }
 

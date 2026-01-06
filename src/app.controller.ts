@@ -1,7 +1,8 @@
-import { Controller, Get, Res, Param, Post, Body, HttpException, HttpStatus, ParseIntPipe, Query } from '@nestjs/common';
+import { Controller, Get, Res, Param, Post, Body, HttpException, HttpStatus, ParseIntPipe, Query, Put, UseGuards, Request } from '@nestjs/common';
 import { AppService } from './app.service';
 import { Response } from 'express';
 import { join } from 'path';
+import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 
 /**
  * Controlador principal de la aplicación del foro
@@ -272,6 +273,52 @@ export class AppController {
     }
     
     return group;
+  }
+
+  /**
+   * Obtiene los usuarios de un grupo específico
+   * @param id ID del grupo
+   * @returns Lista de usuarios en el grupo
+   */
+  @Get('api/groups/:id/users')
+  async getUsersByGroup(@Param('id', ParseIntPipe) id: number) {
+    return this.appService.getUsersByGroup(id);
+  }
+
+  /**
+   * Cambia el grupo de un usuario (solo para administradores)
+   * @param userId ID del usuario a modificar
+   * @param body Contiene el nuevo groupId
+   * @param req Request con el usuario autenticado
+   * @returns Usuario actualizado
+   */
+  @UseGuards(JwtAuthGuard)
+  @Put('api/users/:userId/group')
+  async changeUserGroup(
+    @Param('userId', ParseIntPipe) userId: number,
+    @Body('groupId', ParseIntPipe) groupId: number,
+    @Request() req
+  ) {
+    try {
+      // El JWT strategy guarda el userId como 'sub' en el payload
+      const adminId = req.user?.sub || req.user?.id;
+      
+      if (!adminId) {
+        throw new HttpException('Usuario no autenticado', HttpStatus.UNAUTHORIZED);
+      }
+
+      const updatedUser = await this.appService.changeUserGroup(userId, groupId, adminId);
+      return {
+        success: true,
+        message: 'Grupo de usuario actualizado correctamente',
+        user: updatedUser
+      };
+    } catch (error) {
+      throw new HttpException(
+        error.message || 'Error al cambiar el grupo del usuario',
+        HttpStatus.FORBIDDEN
+      );
+    }
   }
 }
 
