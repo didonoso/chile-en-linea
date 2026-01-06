@@ -1,8 +1,12 @@
-import { Controller, Get, Res, Param, Post, Body, HttpException, HttpStatus, ParseIntPipe, Query, Put, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Res, Param, Post, Body, HttpException, HttpStatus, ParseIntPipe, Query, Put, UseGuards, Request, UseInterceptors, UploadedFile, Delete } from '@nestjs/common';
 import { AppService } from './app.service';
 import { Response } from 'express';
 import { join } from 'path';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { AvatarService } from './avatar.service';
+import { extname } from 'path';
 
 /**
  * Controlador principal de la aplicación del foro
@@ -10,7 +14,10 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
  */
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(
+    private readonly appService: AppService,
+    private readonly avatarService: AvatarService
+  ) {}
 
   /**
    * Renderiza la página principal del foro
@@ -317,6 +324,87 @@ export class AppController {
       throw new HttpException(
         error.message || 'Error al cambiar el grupo del usuario',
         HttpStatus.FORBIDDEN
+      );
+    }
+  }
+
+  /**
+   * Sube o actualiza el avatar de un usuario
+   * @param userId ID del usuario
+   * @param file Archivo de imagen
+   * @param req Request con el usuario autenticado
+   */
+  @UseGuards(JwtAuthGuard)
+  @Post('api/users/:userId/avatar')
+  @UseInterceptors(FileInterceptor('avatar', {
+    storage: diskStorage({
+      destination: './public/uploads/avatars',
+      filename: (req, file, callback) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const ext = extname(file.originalname);
+        callback(null, `avatar-${uniqueSuffix}${ext}`);
+      }
+    }),
+    limits: {
+      fileSize: 5 * 1024 * 1024 // 5MB
+    }
+  }))
+  async uploadAvatar(
+    @Param('userId', ParseIntPipe) userId: number,
+    @UploadedFile() file: Express.Multer.File,
+    @Request() req
+  ) {
+    try {
+      const currentUserId = req.user?.sub || req.user?.id;
+      
+      // Solo el usuario puede cambiar su propio avatar
+      if (currentUserId !== userId) {
+        throw new HttpException('No tienes permiso para cambiar este avatar', HttpStatus.FORBIDDEN);
+      }
+
+      const updatedUser = await this.avatarService.uploadAvatar(userId, file);
+      return {
+        success: true,
+        message: 'Avatar actualizado correctamente',
+        user: updatedUser
+      };
+    } catch (error) {
+      throw new HttpException(
+        error.message || 'Error al subir el avatar',
+        HttpStatus.BAD_REQUEST
+      );
+    }
+  }
+
+  /**
+   * Elimina el avatar de un usuario
+   * @param userId ID del usuario
+   * @param req Request con el usuario autenticado
+   */
+  @UseGuards(JwtAuthGuard)
+  @Delete('api/users/:userId/avatar')
+  async deleteAvatar(
+    @Param('userId', ParseIntPipe) userId: number,
+    @Request() req
+  ) {
+    try {
+      const currentUserId = req.user?.sub || req.user?.id;
+      
+      // Solo el usuario puede eliminar su propio avatar
+      if (currentUserId !== userId) {
+        throw new HttpException('No tienes permiso para eliminar este avatar', HttpStatus.FORBIDDEN);
+      }
+
+      const updatedUser = await this.avatarService.deleteAvatar(userId);
+      return {
+        success: true,
+        message: 'Avatar eliminado correctamente',
+        user: updatedUser
+      };
+    } catch (error) {
+      throw new HttpException(
+        error.message || 'Error al eliminar el avatar',
+        HttpStatus.BAD_REQUEST
       );
     }
   }

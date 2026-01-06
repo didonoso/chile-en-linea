@@ -46,6 +46,17 @@
                 <div class="profile-header">
                     <div class="profile-avatar-section">
                         <div id="profile-avatar" class="avatar-circle-large">US</div>
+                        <div id="avatar-actions" style="margin-top: 10px; display: none;">
+                            <button onclick="document.getElementById('avatar-input').click()" 
+                                    style="padding: 8px 15px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; margin-right: 5px;">
+                                📷 Cambiar Avatar
+                            </button>
+                            <button id="delete-avatar-btn" onclick="deleteAvatar()" 
+                                    style="padding: 8px 15px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; display: none;">
+                                🗑️ Eliminar
+                            </button>
+                            <input type="file" id="avatar-input" accept="image/*" style="display: none;" onchange="uploadAvatar(this.files[0])">
+                        </div>
                     </div>
                     <div class="profile-info-section">
                         <h2 class="profile-username-title" id="profile-username" style="color: inherit;">Cargando...</h2>
@@ -152,17 +163,85 @@
     <script>
         const pathParts = window.location.pathname.split('/');
         const username = pathParts[pathParts.length - 1];
+        let currentUserId = null;
+        let profileUserId = null;
+        
         loadProfile();
 
         async function loadProfile() {
             try {
+                // Obtener usuario actual
+                const meResponse = await fetch('/api/auth/me', { credentials: 'include' });
+                if (meResponse.ok) {
+                    const currentUser = await meResponse.json();
+                    currentUserId = currentUser.id;
+                }
+
                 const response = await fetch(`/api/user/${username}`, { credentials: 'include' });
                 if (!response.ok) { showError(); return; }
                 const profile = await response.json();
+                profileUserId = profile.id;
                 displayProfile(profile);
+                
+                // Mostrar botones de avatar si es el usuario actual
+                if (currentUserId === profileUserId) {
+                    document.getElementById('avatar-actions').style.display = 'block';
+                    if (profile.avatar) {
+                        document.getElementById('delete-avatar-btn').style.display = 'inline-block';
+                    }
+                }
             } catch (error) {
                 console.error('Error cargando perfil:', error);
                 showError();
+            }
+        }
+
+        async function uploadAvatar(file) {
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('avatar', file);
+
+            try {
+                const response = await fetch(`/api/users/${profileUserId}/avatar`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Error al subir el avatar');
+                }
+
+                const result = await response.json();
+                alert('✓ Avatar actualizado correctamente');
+                location.reload();
+            } catch (error) {
+                console.error('Error subiendo avatar:', error);
+                alert('Error: ' + error.message);
+            }
+        }
+
+        async function deleteAvatar() {
+            if (!confirm('¿Estás seguro de eliminar tu avatar?')) return;
+
+            try {
+                const response = await fetch(`/api/users/${profileUserId}/avatar`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Error al eliminar el avatar');
+                }
+
+                alert('✓ Avatar eliminado correctamente');
+                location.reload();
+            } catch (error) {
+                console.error('Error eliminando avatar:', error);
+                alert('Error: ' + error.message);
             }
         }
 
@@ -170,8 +249,17 @@
             document.getElementById('breadcrumb-username').textContent = profile.username;
             document.title = `Perfil de ${profile.username} - Chile en Línea`;
             
-            const avatarInitials = profile.username.substring(0, 2).toUpperCase();
-            document.getElementById('profile-avatar').textContent = avatarInitials;
+            // Mostrar avatar o iniciales
+            const avatarElement = document.getElementById('profile-avatar');
+            if (profile.avatar) {
+                avatarElement.style.backgroundImage = `url(${profile.avatar})`;
+                avatarElement.style.backgroundSize = 'cover';
+                avatarElement.style.backgroundPosition = 'center';
+                avatarElement.textContent = '';
+            } else {
+                const avatarInitials = profile.username.substring(0, 2).toUpperCase();
+                avatarElement.textContent = avatarInitials;
+            }
             
             // Aplicar color del grupo al nombre de usuario
             const usernameElement = document.getElementById('profile-username');

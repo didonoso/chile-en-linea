@@ -135,10 +135,18 @@
                 const groupColor = user.userGroup?.color || '#000';
                 const groupName = user.userGroup?.name || 'Sin grupo';
 
+                // Mostrar avatar real o iniciales
+                let avatarHTML;
+                if (user.avatar) {
+                    avatarHTML = `<div class="avatar-circle" style="background-image: url(${user.avatar}); background-size: cover; background-position: center;"></div>`;
+                } else {
+                    avatarHTML = `<div class="avatar-circle">${avatarInitials}</div>`;
+                }
+
                 return `
                     <tr class="member-row">
                         <td class="member-avatar">
-                            <div class="avatar-circle">${avatarInitials}</div>
+                            ${avatarHTML}
                         </td>
                         <td class="member-username">
                             <a href="/user/${user.username}" class="username-link" style="color: ${groupColor}; font-weight: bold;">${user.username}</a>

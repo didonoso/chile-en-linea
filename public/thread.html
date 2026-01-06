@@ -110,20 +110,26 @@
                     });
 
                     // Renderizar el contenido del post
+                    const avatarInitials = post.author.username.substring(0, 2).toUpperCase();
+                    const avatarHTML = post.author.avatar 
+                        ? `<div class="author-avatar" style="background-image: url(${post.author.avatar}); background-size: cover; background-position: center; width: 180px; height: 180px; border-radius: 0;"></div>`
+                        : `<div class="author-avatar" style="width: 180px; height: 180px; font-size: 48px; line-height: 180px; border-radius: 0;">${avatarInitials}</div>`;
+                    
+                    const groupColor = post.author.userGroup?.color || '#000';
+                    const groupName = post.author.userGroup?.name || 'Miembro';
+                    
                     const threadContent = `
                         <div class="post-container">
                             <div class="post-author-sidebar">
-                                <div class="author-avatar">
-                                    ${post.author.username.substring(0, 2).toUpperCase()}
-                                </div>
+                                ${avatarHTML}
                                 <div class="author-name">
-                                    <a href="/user/${post.author.username}">${post.author.username}</a>
+                                    <a href="/user/${post.author.username}" style="color: ${groupColor}; font-weight: bold;">${post.author.username}</a>
                                 </div>
-                                <div class="author-badge">FORMER STAFF</div>
+                                <div class="author-badge" style="background: ${groupColor}; color: white; padding: 4px 8px; border-radius: 3px; font-size: 11px; margin: 5px 0;">${groupName}</div>
                                 <div class="author-stats">
-                                    <div>Posts: ${post.author.stats.totalPosts.toLocaleString()}</div>
-                                    <div>Threads: ${post.author.stats.totalThreads.toLocaleString()}</div>
-                                    <div>Joined: ${formattedJoinedDate}</div>
+                                    <div>Mensajes: ${post.author.stats.totalPosts.toLocaleString()}</div>
+                                    <div>Temas: ${post.author.stats.totalThreads.toLocaleString()}</div>
+                                    <div>Fecha Registro: ${formattedJoinedDate}</div>
                                 </div>
                             </div>
                             
@@ -248,20 +254,26 @@
                         month: 'short'
                     });
                     
+                    const commentAvatarInitials = comment.author.username.substring(0, 2).toUpperCase();
+                    const commentAvatarHTML = comment.author.avatar 
+                        ? `<div class="author-avatar" style="background-image: url(${comment.author.avatar}); background-size: cover; background-position: center; width: 180px; height: 180px; border-radius: 0;"></div>`
+                        : `<div class="author-avatar" style="width: 180px; height: 180px; font-size: 48px; line-height: 180px; border-radius: 0;">${commentAvatarInitials}</div>`;
+                    
+                    const commentGroupColor = comment.author.userGroup?.color || '#000';
+                    const commentGroupName = comment.author.userGroup?.name || 'Miembro';
+                    
                     commentsHTML += `
                         <div class="post-container">
                             <div class="post-author-sidebar">
-                                <div class="author-avatar">
-                                    ${comment.author.username.substring(0, 2).toUpperCase()}
-                                </div>
+                                ${commentAvatarHTML}
                                 <div class="author-name">
-                                    <a href="/user/${comment.author.username}">${comment.author.username}</a>
+                                    <a href="/user/${comment.author.username}" style="color: ${commentGroupColor}; font-weight: bold;">${comment.author.username}</a>
                                 </div>
-                                <div class="author-badge">FORMER STAFF</div>
+                                <div class="author-badge" style="background: ${commentGroupColor}; color: white; padding: 4px 8px; border-radius: 3px; font-size: 11px; margin: 5px 0;">${commentGroupName}</div>
                                 <div class="author-stats">
-                                    <div>Posts: ${comment.author.stats.totalPosts.toLocaleString()}</div>
-                                    <div>Threads: ${comment.author.stats.totalThreads.toLocaleString()}</div>
-                                    <div>Joined: ${formattedJoinedDate}</div>
+                                    <div>Mensajes: ${comment.author.stats.totalPosts.toLocaleString()}</div>
+                                    <div>Temas: ${comment.author.stats.totalThreads.toLocaleString()}</div>
+                                    <div>Fecha Registro: ${formattedJoinedDate}</div>
                                 </div>
                             </div>
                             

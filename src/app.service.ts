@@ -207,7 +207,14 @@ export class AppService {
             select: { 
               username: true, 
               avatar: true,
-              createdAt: true
+              createdAt: true,
+              userGroup: {
+                select: {
+                  id: true,
+                  name: true,
+                  color: true
+                }
+              }
             }
           },
           category: {
@@ -282,7 +289,14 @@ export class AppService {
             select: { 
               username: true, 
               avatar: true,
-              createdAt: true
+              createdAt: true,
+              userGroup: {
+                select: {
+                  id: true,
+                  name: true,
+                  color: true
+                }
+              }
             }
           }
         },
