@@ -48,8 +48,8 @@
                         <div id="profile-avatar" class="avatar-circle-large">US</div>
                     </div>
                     <div class="profile-info-section">
-                        <h2 class="profile-username-title" id="profile-username">Cargando...</h2>
-                        <div class="user-group">(Miembro)</div>
+                        <h2 class="profile-username-title" id="profile-username" style="color: inherit;">Cargando...</h2>
+                        <div class="user-group" id="user-group-name">(Miembro)</div>
                         <div class="user-stars">
                             <span class="star">⭐</span>
                             <span class="star">⭐</span>
@@ -172,7 +172,23 @@
             
             const avatarInitials = profile.username.substring(0, 2).toUpperCase();
             document.getElementById('profile-avatar').textContent = avatarInitials;
-            document.getElementById('profile-username').textContent = profile.username;
+            
+            // Aplicar color del grupo al nombre de usuario
+            const usernameElement = document.getElementById('profile-username');
+            usernameElement.textContent = profile.username;
+            if (profile.userGroup && profile.userGroup.color) {
+                usernameElement.style.color = profile.userGroup.color;
+            }
+            
+            // Mostrar grupo de usuario
+            const groupElement = document.getElementById('user-group-name');
+            if (profile.userGroup) {
+                groupElement.textContent = `(${profile.userGroup.name})`;
+                if (profile.userGroup.color) {
+                    groupElement.style.color = profile.userGroup.color;
+                }
+            }
+            
             document.getElementById('username-possessive').textContent = profile.username;
             document.getElementById('username-possessive2').textContent = profile.username;
 

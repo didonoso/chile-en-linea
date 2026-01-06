@@ -393,6 +393,13 @@ export class AppService {
             lastLoginAt: true,
             createdAt: true,
             updatedAt: true,
+            userGroup: {
+              select: {
+                id: true,
+                name: true,
+                color: true
+              }
+            },
             _count: {
               select: {
                 posts: true,
@@ -419,7 +426,8 @@ export class AppService {
         avatar: user.avatar,
         joined: user.createdAt,
         lastVisit: user.lastLoginAt || user.createdAt,
-        postCount: user._count.posts + user._count.comments
+        postCount: user._count.posts + user._count.comments,
+        userGroup: user.userGroup
       }));
 
       return {
