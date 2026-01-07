@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grupos de Usuario - Chile en Línea</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="forum-header">
+            <h1><a href="/" style="color: white; text-decoration: none;">Chile en Línea</a></h1>
+        </header>
+
+        <!-- Banner de bienvenida -->
+        <div id="welcome-banner" class="welcome-banner">
+            <div class="welcome-left">
+                <span class="welcome-icon">👋</span>
+                <span id="welcome-text" class="welcome-text">
+                    ¡Bienvenido a Chile en Línea! 
+                    <a href="/register" class="welcome-link">Regístrate</a> 
+                    o 
+                    <a href="/login" class="welcome-link">Inicia sesión</a> 
+                    para participar en la comunidad
+                </span>
+            </div>
+            <div class="welcome-right">
+                <a href="/members" class="welcome-action">👥 Lista de Miembros</a>
+                <a href="/groups" class="welcome-action">👥 Grupos</a>
+                <button id="logout-btn" class="welcome-action" style="display: none; background: none; border: none; color: #fff; cursor: pointer; font-size: 14px;">🚪 Cerrar Sesión</button>
+            </div>
+        </div>
+
+        <main class="forum-container">
+            <!-- Breadcrumb -->
+            <div class="breadcrumb">
+                <a href="/">Chile en Línea</a> &raquo; <span>Grupos de Usuario</span>
+            </div>
+
+            <!-- Contenido Principal -->
+            <div class="groups-container">
+                <div class="groups-header">
+                    <h1>Grupos de Usuario</h1>
+                </div>
+
+                <table class="groups-table">
+                    <thead>
+                        <tr>
+                            <th>Grupo</th>
+                            <th style="text-align: center; width: 120px;"># de Usuarios</th>
+                            <th style="text-align: center; width: 80px;">Orden</th>
+                        </tr>
+                    </thead>
+                    <tbody id="groupsTableBody">
+                        <tr>
+                            <td colspan="3" style="text-align: center; padding: 40px;">
+                                Cargando grupos...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script src="/auth.js"></script>
+    <script>
+        let currentUser = null;
+
+        // Cargar grupos al cargar la página
+        async function loadGroups() {
+            try {
+                const response = await fetch('/api/groups');
+                
+                if (!response.ok) {
+                    throw new Error('Error al cargar grupos');
+                }
+
+                const groups = await response.json();
+                displayGroups(groups);
+            } catch (error) {
+                console.error('Error cargando grupos:', error);
+                document.getElementById('groupsTableBody').innerHTML = `
+                    <tr>
+                        <td colspan="3" style="text-align: center; padding: 40px; color: #cc0000;">
+                            Error al cargar los grupos. Por favor, intenta de nuevo.
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        function displayGroups(groups) {
+            const tbody = document.getElementById('groupsTableBody');
+            
+            if (groups.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="3" style="text-align: center; padding: 40px;">
+                            No hay grupos disponibles.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = groups.map(group => `
+                <tr>
+                    <td>
+                        <span class="group-icon ${group.isDefault ? 'default' : ''}" 
+                              style="background: ${group.color || '#c8dcea'};"></span>
+                        <div style="display: inline-block; vertical-align: middle;">
+                            <div class="group-name" style="color: ${group.color || '#000'};">
+                                ${escapeHtml(group.name)}
+                            </div>
+                            <div class="group-description">
+                                ${escapeHtml(group.description || '')}
+                            </div>
+                        </div>
+                    </td>
+                    <td class="user-count">
+                        <a href="#" onclick="viewGroupUsers(${group.id}, '${escapeHtml(group.name)}'); return false;" 
+                           style="color: #0066cc; text-decoration: none; font-weight: bold;">
+                            ${group.userCount}
+                        </a>
+                    </td>
+                    <td class="group-order">${group.order}</td>
+                </tr>
+            `).join('');
+        }
+
+        async function viewGroupUsers(groupId, groupName) {
+            try {
+                const response = await fetch(`/api/groups/${groupId}/users`);
+                
+                if (!response.ok) {
+                    throw new Error('Error al cargar usuarios del grupo');
+                }
+
+                const users = await response.json();
+                showUsersModal(groupId, groupName, users);
+            } catch (error) {
+                console.error('Error cargando usuarios:', error);
+                alert('Error al cargar los usuarios del grupo');
+            }
+        }
+
+        function showUsersModal(groupId, groupName, users) {
+            const isAdmin = currentUser && currentUser.userGroupId === 4;
+            
+            let modalHtml = `
+                <div id="usersModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; align-items: center; justify-content: center;">
+                    <div style="background: white; padding: 30px; border-radius: 8px; max-width: 800px; width: 90%; max-height: 80vh; overflow-y: auto;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h2 style="margin: 0; color: #333;">Usuarios en ${escapeHtml(groupName)}</h2>
+                            <button onclick="closeModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">&times;</button>
+                        </div>
+                        ${users.length === 0 ? '<p style="text-align: center; color: #666;">No hay usuarios en este grupo</p>' : `
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background: #c8dcea;">
+                                    <th style="padding: 10px; text-align: left; border-bottom: 2px solid #9cb3c5;">Usuario</th>
+                                    <th style="padding: 10px; text-align: center; border-bottom: 2px solid #9cb3c5;">Registrado</th>
+                                    ${isAdmin ? '<th style="padding: 10px; text-align: center; border-bottom: 2px solid #9cb3c5; width: 200px;">Acciones</th>' : ''}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${users.map(user => `
+                                    <tr style="border-bottom: 1px solid #e8e8e8;">
+                                        <td style="padding: 10px;">
+                                            <a href="/user/${user.username}" style="color: #0066cc; text-decoration: none; font-weight: bold;">
+                                                ${escapeHtml(user.username)}
+                                            </a>
+                                        </td>
+                                        <td style="padding: 10px; text-align: center; color: #666; font-size: 13px;">
+                                            ${new Date(user.createdAt).toLocaleDateString('es-CL')}
+                                        </td>
+                                        ${isAdmin ? `
+                                        <td style="padding: 10px; text-align: center;">
+                                            <select id="group-select-${user.id}" onchange="changeUserGroup(${user.id}, this.value, '${escapeHtml(user.username)}')" 
+                                                    style="padding: 5px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px;">
+                                                <option value="">Cambiar grupo...</option>
+                                            </select>
+                                        </td>
+                                        ` : ''}
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                        `}
+                    </div>
+                </div>
+            `;
+
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+            // Si es admin, cargar opciones de grupos
+            if (isAdmin) {
+                loadGroupOptions(groupId);
+            }
+        }
+
+        async function loadGroupOptions(currentGroupId) {
+            try {
+                const response = await fetch('/api/groups');
+                const groups = await response.json();
+
+                document.querySelectorAll('[id^="group-select-"]').forEach(select => {
+                    groups.forEach(group => {
+                        if (group.id !== currentGroupId) {
+                            const option = document.createElement('option');
+                            option.value = group.id;
+                            option.textContent = group.name;
+                            option.style.color = group.color || '#000';
+                            select.appendChild(option);
+                        }
+                    });
+                });
+            } catch (error) {
+                console.error('Error cargando opciones de grupos:', error);
+            }
+        }
+
+        async function changeUserGroup(userId, newGroupId, username) {
+            if (!newGroupId || !confirm(`¿Estás seguro de cambiar el grupo de ${username}?`)) {
+                document.getElementById(`group-select-${userId}`).value = '';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/users/${userId}/group`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ groupId: parseInt(newGroupId) })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Error al cambiar el grupo');
+                }
+
+                const result = await response.json();
+                alert(`✓ Grupo de ${username} actualizado correctamente`);
+                closeModal();
+                loadGroups(); // Recargar la lista
+            } catch (error) {
+                console.error('Error cambiando grupo:', error);
+                alert('Error: ' + error.message);
+                document.getElementById(`group-select-${userId}`).value = '';
+            }
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('usersModal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Cargar grupos al iniciar
+        document.addEventListener('DOMContentLoaded', async () => {
+            await checkAuth(); // Función de auth.js
+            
+            // Obtener usuario actual
+            try {
+                const response = await fetch('/api/auth/me', { credentials: 'include' });
+                if (response.ok) {
+                    currentUser = await response.json();
+                }
+            } catch (error) {
+                console.log('Usuario no autenticado');
+            }
+            
+            loadGroups();
+        });
+    </script>
+</body>
+</html>

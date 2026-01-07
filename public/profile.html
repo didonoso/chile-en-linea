@@ -27,6 +27,7 @@
             </div>
             <div class="welcome-right">
                 <a href="/members" class="welcome-action">👥 Lista de Miembros</a>
+                <a href="/groups" class="welcome-action">👥 Grupos</a>
                 <button id="logout-btn" class="welcome-action" style="display: none; background: none; border: none; color: #fff; cursor: pointer; font-size: 14px;">🚪 Cerrar Sesión</button>
             </div>
         </div>
@@ -45,10 +46,21 @@
                 <div class="profile-header">
                     <div class="profile-avatar-section">
                         <div id="profile-avatar" class="avatar-circle-large">US</div>
+                        <div id="avatar-actions" style="margin-top: 10px; display: none;">
+                            <button onclick="document.getElementById('avatar-input').click()" 
+                                    style="padding: 8px 15px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; margin-right: 5px;">
+                                📷 Cambiar Avatar
+                            </button>
+                            <button id="delete-avatar-btn" onclick="deleteAvatar()" 
+                                    style="padding: 8px 15px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; display: none;">
+                                🗑️ Eliminar
+                            </button>
+                            <input type="file" id="avatar-input" accept="image/*" style="display: none;" onchange="uploadAvatar(this.files[0])">
+                        </div>
                     </div>
                     <div class="profile-info-section">
-                        <h2 class="profile-username-title" id="profile-username">Cargando...</h2>
-                        <div class="user-group">(Miembro)</div>
+                        <h2 class="profile-username-title" id="profile-username" style="color: inherit;">Cargando...</h2>
+                        <div class="user-group" id="user-group-name">(Miembro)</div>
                         <div class="user-stars">
                             <span class="star">⭐</span>
                             <span class="star">⭐</span>
@@ -106,7 +118,7 @@
                             <td class="info-label">Reputación:</td>
                             <td class="info-value">
                                 <span id="info-reputation">0</span> 
-                                <a href="#" class="info-link">[Detalles]</a>
+                                <a href="#" id="reputation-details-link" class="info-link">[Detalles]</a>
                             </td>
                         </tr>
                         <tr>
@@ -151,17 +163,85 @@
     <script>
         const pathParts = window.location.pathname.split('/');
         const username = pathParts[pathParts.length - 1];
+        let currentUserId = null;
+        let profileUserId = null;
+        
         loadProfile();
 
         async function loadProfile() {
             try {
+                // Obtener usuario actual
+                const meResponse = await fetch('/api/auth/me', { credentials: 'include' });
+                if (meResponse.ok) {
+                    const currentUser = await meResponse.json();
+                    currentUserId = currentUser.id;
+                }
+
                 const response = await fetch(`/api/user/${username}`, { credentials: 'include' });
                 if (!response.ok) { showError(); return; }
                 const profile = await response.json();
+                profileUserId = profile.id;
                 displayProfile(profile);
+                
+                // Mostrar botones de avatar si es el usuario actual
+                if (currentUserId === profileUserId) {
+                    document.getElementById('avatar-actions').style.display = 'block';
+                    if (profile.avatar) {
+                        document.getElementById('delete-avatar-btn').style.display = 'inline-block';
+                    }
+                }
             } catch (error) {
                 console.error('Error cargando perfil:', error);
                 showError();
+            }
+        }
+
+        async function uploadAvatar(file) {
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('avatar', file);
+
+            try {
+                const response = await fetch(`/api/users/${profileUserId}/avatar`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Error al subir el avatar');
+                }
+
+                const result = await response.json();
+                alert('✓ Avatar actualizado correctamente');
+                location.reload();
+            } catch (error) {
+                console.error('Error subiendo avatar:', error);
+                alert('Error: ' + error.message);
+            }
+        }
+
+        async function deleteAvatar() {
+            if (!confirm('¿Estás seguro de eliminar tu avatar?')) return;
+
+            try {
+                const response = await fetch(`/api/users/${profileUserId}/avatar`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Error al eliminar el avatar');
+                }
+
+                alert('✓ Avatar eliminado correctamente');
+                location.reload();
+            } catch (error) {
+                console.error('Error eliminando avatar:', error);
+                alert('Error: ' + error.message);
             }
         }
 
@@ -169,9 +249,34 @@
             document.getElementById('breadcrumb-username').textContent = profile.username;
             document.title = `Perfil de ${profile.username} - Chile en Línea`;
             
-            const avatarInitials = profile.username.substring(0, 2).toUpperCase();
-            document.getElementById('profile-avatar').textContent = avatarInitials;
-            document.getElementById('profile-username').textContent = profile.username;
+            // Mostrar avatar o iniciales
+            const avatarElement = document.getElementById('profile-avatar');
+            if (profile.avatar) {
+                avatarElement.style.backgroundImage = `url(${profile.avatar})`;
+                avatarElement.style.backgroundSize = 'cover';
+                avatarElement.style.backgroundPosition = 'center';
+                avatarElement.textContent = '';
+            } else {
+                const avatarInitials = profile.username.substring(0, 2).toUpperCase();
+                avatarElement.textContent = avatarInitials;
+            }
+            
+            // Aplicar color del grupo al nombre de usuario
+            const usernameElement = document.getElementById('profile-username');
+            usernameElement.textContent = profile.username;
+            if (profile.userGroup && profile.userGroup.color) {
+                usernameElement.style.color = profile.userGroup.color;
+            }
+            
+            // Mostrar grupo de usuario
+            const groupElement = document.getElementById('user-group-name');
+            if (profile.userGroup) {
+                groupElement.textContent = `(${profile.userGroup.name})`;
+                if (profile.userGroup.color) {
+                    groupElement.style.color = profile.userGroup.color;
+                }
+            }
+            
             document.getElementById('username-possessive').textContent = profile.username;
             document.getElementById('username-possessive2').textContent = profile.username;
 
@@ -216,6 +321,9 @@
             document.getElementById('info-threadspercent').textContent = '0';
             document.getElementById('info-reputation').textContent = profile.stats.reputation;
             document.getElementById('info-warning').textContent = profile.stats.warningLevel;
+            
+            // Actualizar link de detalles de reputación
+            document.getElementById('reputation-details-link').href = `/reputation/${profile.username}`;
 
             displayRecentPosts(profile.recentPosts);
         }

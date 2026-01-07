@@ -207,7 +207,19 @@ export class AppService {
             select: { 
               username: true, 
               avatar: true,
-              createdAt: true
+              createdAt: true,
+              userGroup: {
+                select: {
+                  id: true,
+                  name: true,
+                  color: true
+                }
+              },
+              receivedReputations: {
+                select: {
+                  type: true
+                }
+              }
             }
           },
           category: {
@@ -234,15 +246,23 @@ export class AppService {
         this.prisma.post.count({ where: { authorId: post.authorId } }),
         this.prisma.comment.count({ where: { authorId: post.authorId } })
       ]);
+      
+      // Calcular reputación
+      const positives = post.author.receivedReputations.filter(r => r.type === 'positive').length;
+      const negatives = post.author.receivedReputations.filter(r => r.type === 'negative').length;
+      const reputation = positives - negatives;
 
       return {
         ...post,
         author: {
-          ...post.author,
+          username: post.author.username,
+          avatar: post.author.avatar,
+          userGroup: post.author.userGroup,
           stats: {
             totalPosts: authorPosts + authorComments,
             totalThreads: authorPosts,
-            joinedDate: post.author.createdAt
+            joinedDate: post.author.createdAt,
+            reputation
           }
         }
       };
@@ -282,7 +302,19 @@ export class AppService {
             select: { 
               username: true, 
               avatar: true,
-              createdAt: true
+              createdAt: true,
+              userGroup: {
+                select: {
+                  id: true,
+                  name: true,
+                  color: true
+                }
+              },
+              receivedReputations: {
+                select: {
+                  type: true
+                }
+              }
             }
           }
         },
@@ -296,15 +328,23 @@ export class AppService {
             this.prisma.post.count({ where: { authorId: comment.authorId } }),
             this.prisma.comment.count({ where: { authorId: comment.authorId } })
           ]);
+          
+          // Calcular reputación
+          const positives = comment.author.receivedReputations.filter(r => r.type === 'positive').length;
+          const negatives = comment.author.receivedReputations.filter(r => r.type === 'negative').length;
+          const reputation = positives - negatives;
 
           return {
             ...comment,
             author: {
-              ...comment.author,
+              username: comment.author.username,
+              avatar: comment.author.avatar,
+              userGroup: comment.author.userGroup,
               stats: {
                 totalPosts: authorPosts + authorComments,
                 totalThreads: authorPosts,
-                joinedDate: comment.author.createdAt
+                joinedDate: comment.author.createdAt,
+                reputation
               }
             }
           };
@@ -393,10 +433,22 @@ export class AppService {
             lastLoginAt: true,
             createdAt: true,
             updatedAt: true,
+            userGroup: {
+              select: {
+                id: true,
+                name: true,
+                color: true
+              }
+            },
             _count: {
               select: {
                 posts: true,
                 comments: true
+              }
+            },
+            receivedReputations: {
+              select: {
+                type: true
               }
             }
           },
@@ -412,15 +464,23 @@ export class AppService {
       // Calcular total de páginas
       const totalPages = Math.ceil(totalUsers / limit);
 
-      // Formatear usuarios con conteo de posts
-      const formattedUsers = users.map(user => ({
-        id: user.id,
-        username: user.username,
-        avatar: user.avatar,
-        joined: user.createdAt,
-        lastVisit: user.lastLoginAt || user.createdAt,
-        postCount: user._count.posts + user._count.comments
-      }));
+      // Formatear usuarios con conteo de posts y reputación
+      const formattedUsers = users.map(user => {
+        const positives = user.receivedReputations.filter(r => r.type === 'positive').length;
+        const negatives = user.receivedReputations.filter(r => r.type === 'negative').length;
+        const reputation = positives - negatives;
+        
+        return {
+          id: user.id,
+          username: user.username,
+          avatar: user.avatar,
+          joined: user.createdAt,
+          lastVisit: user.lastLoginAt || user.createdAt,
+          postCount: user._count.posts + user._count.comments,
+          reputation,
+          userGroup: user.userGroup
+        };
+      });
 
       return {
         users: formattedUsers,
@@ -455,10 +515,22 @@ export class AppService {
           avatar: true,
           createdAt: true,
           lastLoginAt: true,
+          userGroup: {
+            select: {
+              id: true,
+              name: true,
+              color: true
+            }
+          },
           _count: {
             select: {
               posts: true,
               comments: true
+            }
+          },
+          receivedReputations: {
+            select: {
+              type: true
             }
           }
         }
@@ -488,16 +560,22 @@ export class AppService {
         take: 10
       });
 
+      // Calcular reputación
+      const positives = user.receivedReputations.filter(r => r.type === 'positive').length;
+      const negatives = user.receivedReputations.filter(r => r.type === 'negative').length;
+      const reputation = positives - negatives;
+      
       return {
         id: user.id,
         username: user.username,
         avatar: user.avatar,
         joinedDate: user.createdAt,
         lastLogin: user.lastLoginAt || user.createdAt,
+        userGroup: user.userGroup,
         stats: {
           totalThreads: user._count.posts,
           totalPosts: user._count.posts + user._count.comments,
-          reputation: 0,
+          reputation,
           warningLevel: 0
         },
         recentPosts
@@ -507,4 +585,319 @@ export class AppService {
       throw error;
     }
   }
+
+  /**
+   * Obtiene todos los grupos de usuario
+   * @returns Lista de grupos con contador de usuarios
+   */
+  async getUserGroups() {
+    try {
+      const groups = await this.prisma.userGroup.findMany({
+        include: {
+          _count: {
+            select: { users: true }
+          }
+        },
+        orderBy: {
+          order: 'asc'
+        }
+      });
+
+      return groups.map(group => ({
+        id: group.id,
+        name: group.name,
+        description: group.description,
+        order: group.order,
+        color: group.color,
+        isDefault: group.isDefault,
+        userCount: group._count.users
+      }));
+    } catch (error) {
+      this.logger.error('Error obteniendo grupos de usuario', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene un grupo de usuario por ID
+   * @param id ID del grupo
+   * @returns Información del grupo
+   */
+  async getUserGroupById(id: number) {
+    try {
+      return await this.prisma.userGroup.findUnique({
+        where: { id },
+        include: {
+          _count: {
+            select: { users: true }
+          }
+        }
+      });
+    } catch (error) {
+      this.logger.error(`Error obteniendo grupo de usuario: ${id}`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene los usuarios de un grupo específico
+   * @param groupId ID del grupo
+   * @returns Lista de usuarios en el grupo
+   */
+  async getUsersByGroup(groupId: number) {
+    try {
+      const users = await this.prisma.user.findMany({
+        where: { userGroupId: groupId },
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          avatar: true,
+          createdAt: true,
+          lastLoginAt: true,
+          userGroup: {
+            select: {
+              id: true,
+              name: true,
+              color: true
+            }
+          }
+        },
+        orderBy: { createdAt: 'desc' }
+      });
+
+      return users;
+    } catch (error) {
+      this.logger.error(`Error obteniendo usuarios del grupo: ${groupId}`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Cambia el grupo de un usuario (solo para administradores)
+   * @param userId ID del usuario a modificar
+   * @param newGroupId ID del nuevo grupo
+   * @param adminId ID del administrador que realiza el cambio
+   * @returns Usuario actualizado
+   */
+  async changeUserGroup(userId: number, newGroupId: number, adminId: number) {
+    try {
+      // Verificar que el admin es realmente administrador (userGroupId: 4)
+      const admin = await this.prisma.user.findUnique({
+        where: { id: adminId },
+        select: { userGroupId: true }
+      });
+
+      if (!admin || admin.userGroupId !== 4) {
+        throw new Error('No tienes permisos para realizar esta acción');
+      }
+
+      // Verificar que el grupo existe
+      const group = await this.prisma.userGroup.findUnique({
+        where: { id: newGroupId }
+      });
+
+      if (!group) {
+        throw new Error('El grupo no existe');
+      }
+
+      // Actualizar el grupo del usuario
+      const updatedUser = await this.prisma.user.update({
+        where: { id: userId },
+        data: { userGroupId: newGroupId },
+        include: {
+          userGroup: {
+            select: {
+              id: true,
+              name: true,
+              color: true
+            }
+          }
+        }
+      });
+
+      this.logger.log(`Admin ${adminId} cambió el grupo del usuario ${userId} al grupo ${newGroupId}`);
+      return updatedUser;
+    } catch (error) {
+      this.logger.error(`Error cambiando grupo de usuario: ${userId}`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene el reporte de reputación de un usuario con estadísticas agregadas
+   * @param username Nombre del usuario
+   */
+  async getReputationReport(username: string) {
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: { username },
+        include: {
+          userGroup: {
+            select: {
+              id: true,
+              name: true,
+              color: true
+            }
+          },
+          receivedReputations: {
+            include: {
+              fromUser: {
+                select: {
+                  id: true,
+                  username: true
+                }
+              }
+            },
+            orderBy: {
+              createdAt: 'desc'
+            }
+          }
+        }
+      });
+
+      if (!user) {
+        throw new Error('Usuario no encontrado');
+      }
+
+      // Calcular totales de reputación
+      const positives = user.receivedReputations.filter(r => r.type === 'positive').length;
+      const neutrals = user.receivedReputations.filter(r => r.type === 'neutral').length;
+      const negatives = user.receivedReputations.filter(r => r.type === 'negative').length;
+      const totalReputation = positives - negatives;
+
+      // Estadísticas por periodo
+      const now = new Date();
+      const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      const sixMonthsAgo = new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000);
+
+      const getStatsByPeriod = (since: Date) => {
+        const filtered = user.receivedReputations.filter(r => r.createdAt >= since);
+        return {
+          positives: filtered.filter(r => r.type === 'positive').length,
+          neutrals: filtered.filter(r => r.type === 'neutral').length,
+          negatives: filtered.filter(r => r.type === 'negative').length
+        };
+      };
+
+      return {
+        user: {
+          id: user.id,
+          username: user.username,
+          userGroup: user.userGroup
+        },
+        summary: {
+          totalReputation,
+          positives,
+          neutrals,
+          negatives
+        },
+        periods: {
+          lastWeek: getStatsByPeriod(oneWeekAgo),
+          lastMonth: getStatsByPeriod(oneMonthAgo),
+          last6Months: getStatsByPeriod(sixMonthsAgo)
+        },
+        reputations: user.receivedReputations.map(r => ({
+          id: r.id,
+          type: r.type,
+          comment: r.comment,
+          createdAt: r.createdAt,
+          fromUser: r.fromUser
+        }))
+      };
+    } catch (error) {
+      this.logger.error(`Error obteniendo reporte de reputación para ${username}`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Da reputación a un usuario
+   * @param fromUserId ID del usuario que da la reputación
+   * @param toUserId ID del usuario que recibe la reputación
+   * @param type Tipo de reputación: positive, neutral, negative
+   * @param comment Comentario opcional
+   */
+  async giveReputation(fromUserId: number, toUserId: number, type: string, comment?: string) {
+    try {
+      // Validar que no se de reputación a sí mismo
+      if (fromUserId === toUserId) {
+        const { HttpException, HttpStatus } = require('@nestjs/common');
+        throw new HttpException('No puedes darte reputación a ti mismo', HttpStatus.BAD_REQUEST);
+      }
+
+      // Validar tipo de reputación
+      if (!['positive', 'neutral', 'negative'].includes(type)) {
+        const { HttpException, HttpStatus } = require('@nestjs/common');
+        throw new HttpException('Tipo de reputación inválido', HttpStatus.BAD_REQUEST);
+      }
+
+      // Verificar que el usuario receptor existe
+      const toUser = await this.prisma.user.findUnique({
+        where: { id: toUserId }
+      });
+
+      if (!toUser) {
+        const { HttpException, HttpStatus } = require('@nestjs/common');
+        throw new HttpException('Usuario no encontrado', HttpStatus.NOT_FOUND);
+      }
+
+      const reputation = await this.prisma.reputation.create({
+        data: {
+          fromUserId,
+          toUserId,
+          type,
+          comment: comment || null
+        },
+        include: {
+          fromUser: {
+            select: {
+              id: true,
+              username: true
+            }
+          }
+        }
+      });
+
+      this.logger.log(`Usuario ${fromUserId} dio reputación ${type} a usuario ${toUserId}`);
+      return reputation;
+    } catch (error) {
+      this.logger.error(`Error dando reputación`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Elimina una reputación (solo quien la dio puede eliminarla)
+   * @param reputationId ID de la reputación
+   * @param userId ID del usuario que intenta eliminarla
+   */
+  async deleteReputation(reputationId: number, userId: number) {
+    try {
+      const reputation = await this.prisma.reputation.findUnique({
+        where: { id: reputationId }
+      });
+
+      if (!reputation) {
+        throw new Error('Reputación no encontrada');
+      }
+
+      // Solo quien dio la reputación puede eliminarla
+      if (reputation.fromUserId !== userId) {
+        throw new Error('No tienes permiso para eliminar esta reputación');
+      }
+
+      await this.prisma.reputation.delete({
+        where: { id: reputationId }
+      });
+
+      this.logger.log(`Usuario ${userId} eliminó reputación ${reputationId}`);
+      return { success: true, message: 'Reputación eliminada correctamente' };
+    } catch (error) {
+      this.logger.error(`Error eliminando reputación`, error);
+      throw error;
+    }
+  }
 }
+

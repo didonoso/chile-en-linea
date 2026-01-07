@@ -10,6 +10,20 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Modelo de Grupo de Usuario
+model UserGroup {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  order       Int      @default(0)
+  color       String?  // Color para el nombre del grupo
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  users       User[]
+}
+
 // Modelo de Usuario
 model User {
   id          Int       @id @default(autoincrement())
@@ -21,9 +35,16 @@ model User {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   
+  userGroupId Int       @default(2) // Por defecto: Registrados
+  userGroup   UserGroup @relation(fields: [userGroupId], references: [id])
+  
   posts     Post[]
   comments  Comment[]
   likes     Like[]
+  givenReputations     Reputation[] @relation("GivenReputations")
+  receivedReputations  Reputation[] @relation("ReceivedReputations")
+  
+  @@index([userGroupId])
 }
 
 // Modelo de Categoría
@@ -94,4 +115,22 @@ model Like {
   post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
   
   @@unique([userId, postId])
+}
+
+// Modelo de Reputación
+model Reputation {
+  id        Int      @id @default(autoincrement())
+  type      String   // 'positive', 'neutral', 'negative'
+  comment   String?  @db.Text
+  createdAt DateTime @default(now())
+  
+  fromUserId Int
+  fromUser   User    @relation("GivenReputations", fields: [fromUserId], references: [id], onDelete: Cascade)
+  
+  toUserId   Int
+  toUser     User    @relation("ReceivedReputations", fields: [toUserId], references: [id], onDelete: Cascade)
+  
+  @@index([toUserId])
+  @@index([fromUserId])
+  @@index([createdAt])
 }

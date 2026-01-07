@@ -941,7 +941,7 @@ body {
     width: 80px;
     height: 80px;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 50%;
+    border-radius: 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1787,3 +1787,130 @@ body {
         padding: 6px;
     }
 }
+
+/* ====================================
+   ESTILOS DE GRUPOS DE USUARIO
+   ==================================== */
+
+.groups-container {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 0 20px;
+}
+
+.groups-header {
+    background: linear-gradient(to bottom, #f5f5f5, #e8e8e8);
+    border: 1px solid #ccc;
+    padding: 15px 20px;
+    border-radius: 5px 5px 0 0;
+    margin-bottom: 0;
+}
+
+.groups-header h1 {
+    margin: 0;
+    font-size: 18px;
+    color: #333;
+    font-weight: bold;
+}
+
+.groups-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    border: 1px solid #ccc;
+    border-top: none;
+}
+
+.groups-table thead {
+    background: #c8dcea;
+    color: #000;
+}
+
+.groups-table thead th {
+    padding: 12px;
+    text-align: left;
+    font-weight: bold;
+    border-bottom: 1px solid #9cb3c5;
+    font-size: 13px;
+}
+
+.groups-table tbody tr {
+    border-bottom: 1px solid #e8e8e8;
+    transition: background-color 0.2s;
+}
+
+.groups-table tbody tr:hover {
+    background-color: #f9f9f9;
+}
+
+.groups-table tbody td {
+    padding: 12px;
+    vertical-align: middle;
+    font-size: 13px;
+}
+
+.group-icon {
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+    background: #c8dcea;
+    border-radius: 3px;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+.group-icon.default {
+    background: #90c090;
+}
+
+.group-name {
+    font-weight: bold;
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.group-description {
+    color: #666;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.user-count {
+    text-align: center;
+    font-weight: bold;
+    color: #0066cc;
+}
+
+.group-order {
+    text-align: center;
+    color: #666;
+}
+
+.back-link {
+    display: inline-block;
+    margin-bottom: 15px;
+    color: #0066cc;
+    text-decoration: none;
+    font-size: 13px;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .groups-table {
+        font-size: 12px;
+    }
+
+    .groups-table thead th,
+    .groups-table tbody td {
+        padding: 8px;
+    }
+
+    .group-description {
+        display: none;
+    }
+}
+

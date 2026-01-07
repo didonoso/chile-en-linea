@@ -27,6 +27,7 @@
             </div>
             <div class="welcome-right">
                 <a href="/members" class="welcome-action">👥 Lista de Miembros</a>
+                <a href="/groups" class="welcome-action">👥 Grupos</a>
                 <button id="logout-btn" class="welcome-action" style="display: none; background: none; border: none; color: #fff; cursor: pointer; font-size: 14px;">🚪 Cerrar Sesión</button>
             </div>
         </div>
@@ -366,10 +367,10 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
+                    credentials: 'include',
                     body: JSON.stringify({
                         title: title,
-                        content: content,
-                        authorId: currentUser.id
+                        content: content
                     })
                 });
 

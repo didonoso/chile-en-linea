@@ -166,6 +166,7 @@ export class AuthService {
         lastLoginAt: true,
         createdAt: true,
         updatedAt: true,
+        userGroupId: true,
       },
     });
 
