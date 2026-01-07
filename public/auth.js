@@ -57,6 +57,7 @@ async function handleWelcomeBanner() {
     const user = await getCurrentUser();
     const welcomeText = document.getElementById('welcome-text');
     const logoutBtn = document.getElementById('logout-btn');
+    const adminBtn = document.getElementById('admin-btn');
     
     if (user && welcomeText) {
         // Usuario autenticado: mostrar mensaje personalizado
@@ -89,6 +90,11 @@ async function handleWelcomeBanner() {
         if (logoutBtn) {
             logoutBtn.style.display = 'inline-block';
             logoutBtn.addEventListener('click', logout);
+        }
+
+        // Mostrar botón de administrador solo para userGroupId === 4
+        if (adminBtn && user.userGroupId === 4) {
+            adminBtn.style.display = 'inline-block';
         }
     }
 }

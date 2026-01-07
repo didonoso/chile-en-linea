@@ -92,6 +92,14 @@ export class AppController {
   }
 
   /**
+   * Renderiza el panel de administrador
+   */
+  @Get('admin')
+  getAdminPanel(@Res() res: Response) {
+    return res.sendFile(join(__dirname, '..', 'public', 'admin.html'));
+  }
+
+  /**
    * Renderiza la página de reporte de reputación
    */
   @Get('reputation/:username')
