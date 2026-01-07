@@ -34,6 +34,57 @@ export class AppService {
   }
 
   /**
+   * Crea una nueva categoría
+   */
+  async createCategory(name: string, slug: string, description?: string) {
+    try {
+      return await this.prisma.category.create({
+        data: {
+          name,
+          slug,
+          description
+        }
+      });
+    } catch (error) {
+      this.logger.error('Error creando categoría', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Actualiza una categoría existente
+   */
+  async updateCategory(id: number, name: string, slug: string, description?: string) {
+    try {
+      return await this.prisma.category.update({
+        where: { id },
+        data: {
+          name,
+          slug,
+          description
+        }
+      });
+    } catch (error) {
+      this.logger.error('Error actualizando categoría', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Elimina una categoría y todos sus posts asociados
+   */
+  async deleteCategory(id: number) {
+    try {
+      return await this.prisma.category.delete({
+        where: { id }
+      });
+    } catch (error) {
+      this.logger.error('Error eliminando categoría', error);
+      throw error;
+    }
+  }
+
+  /**
    * Obtiene estadísticas generales del foro de forma optimizada
    * Usa Promise.all para ejecutar consultas en paralelo
    * @returns Estadísticas del foro
