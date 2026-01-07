@@ -118,7 +118,7 @@
                             <td class="info-label">Reputación:</td>
                             <td class="info-value">
                                 <span id="info-reputation">0</span> 
-                                <a href="#" class="info-link">[Detalles]</a>
+                                <a href="#" id="reputation-details-link" class="info-link">[Detalles]</a>
                             </td>
                         </tr>
                         <tr>
@@ -321,6 +321,9 @@
             document.getElementById('info-threadspercent').textContent = '0';
             document.getElementById('info-reputation').textContent = profile.stats.reputation;
             document.getElementById('info-warning').textContent = profile.stats.warningLevel;
+            
+            // Actualizar link de detalles de reputación
+            document.getElementById('reputation-details-link').href = `/reputation/${profile.username}`;
 
             displayRecentPosts(profile.recentPosts);
         }

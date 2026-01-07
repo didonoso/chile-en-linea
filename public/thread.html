@@ -5,6 +5,133 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title id="page-title">Thread - Chile en Línea</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        .reputation-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .reputation-modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 0;
+            border: 1px solid #888;
+            width: 500px;
+            max-width: 90%;
+            border-radius: 5px;
+        }
+        
+        .reputation-modal-header {
+            background: linear-gradient(to bottom, #0066a8 0%, #005691 100%);
+            color: white;
+            padding: 12px 15px;
+            font-weight: bold;
+            border-radius: 5px 5px 0 0;
+        }
+        
+        .reputation-modal-body {
+            padding: 20px;
+        }
+        
+        .reputation-type-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .reputation-type-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #ddd;
+            background: white;
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .reputation-type-btn.selected {
+            transform: scale(1.05);
+        }
+        
+        .reputation-type-btn.positive {
+            border-color: #4caf50;
+        }
+        
+        .reputation-type-btn.positive.selected {
+            background: #4caf50;
+            color: white;
+        }
+        
+        .reputation-type-btn.neutral {
+            border-color: #9e9e9e;
+        }
+        
+        .reputation-type-btn.neutral.selected {
+            background: #9e9e9e;
+            color: white;
+        }
+        
+        .reputation-type-btn.negative {
+            border-color: #f44336;
+        }
+        
+        .reputation-type-btn.negative.selected {
+            background: #f44336;
+            color: white;
+        }
+        
+        .reputation-comment-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            min-height: 80px;
+            font-family: inherit;
+            margin-bottom: 15px;
+        }
+        
+        .reputation-modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .reputation-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .reputation-btn-submit {
+            background: #0066a8;
+            color: white;
+        }
+        
+        .reputation-btn-cancel {
+            background: #ccc;
+            color: #333;
+        }
+        
+        .rate-user-link {
+            color: #0066cc;
+            text-decoration: none;
+            font-size: 11px;
+            cursor: pointer;
+        }
+        
+        .rate-user-link:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -130,11 +257,11 @@
                                     <div>Mensajes: ${post.author.stats.totalPosts.toLocaleString()}</div>
                                     <div>Temas: ${post.author.stats.totalThreads.toLocaleString()}</div>
                                     <div>Fecha Registro: ${formattedJoinedDate}</div>
+                                    <div>Reputación: ${post.author.stats.reputation || 0} <a class="rate-user-link" onclick="openReputationModal(${post.authorId}, '${post.author.username}')">Evaluar Usuario</a></div>
                                 </div>
                             </div>
                             
-                            <div class="post-content-main">
-                                <div class="post-header">
+                            <div class="post-content-main">\n                                <div class="post-header">
                                     <div class="post-date">${formattedDate}</div>
                                     <div class="post-number">#1</div>
                                 </div>
@@ -202,9 +329,9 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
+                    credentials: 'include',
                     body: JSON.stringify({
-                        content: content,
-                        authorId: 1 // Usuario demo
+                        content: content
                     })
                 });
 
@@ -274,6 +401,7 @@
                                     <div>Mensajes: ${comment.author.stats.totalPosts.toLocaleString()}</div>
                                     <div>Temas: ${comment.author.stats.totalThreads.toLocaleString()}</div>
                                     <div>Fecha Registro: ${formattedJoinedDate}</div>
+                                    <div>Reputación: ${comment.author.stats.reputation || 0} <a class="rate-user-link" onclick="openReputationModal(${comment.authorId}, '${comment.author.username}')">Evaluar Usuario</a></div>
                                 </div>
                             </div>
                             
@@ -325,6 +453,115 @@
             
             return formatted;
         }
+        
+        // Modal de reputación
+        let reputationTargetUserId = null;
+        let reputationTargetUsername = null;
+        let selectedReputationType = null;
+        
+        function openReputationModal(userId, username) {
+            reputationTargetUserId = userId;
+            reputationTargetUsername = username;
+            selectedReputationType = null;
+            
+            document.getElementById('reputation-modal-username').textContent = username;
+            document.getElementById('reputation-comment-input').value = '';
+            
+            // Limpiar selección
+            document.querySelectorAll('.reputation-type-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            document.getElementById('reputation-modal').style.display = 'block';
+        }
+        
+        function closeReputationModal() {
+            document.getElementById('reputation-modal').style.display = 'none';
+            reputationTargetUserId = null;
+            reputationTargetUsername = null;
+            selectedReputationType = null;
+        }
+        
+        function selectReputationType(type) {
+            selectedReputationType = type;
+            
+            // Actualizar botones
+            document.querySelectorAll('.reputation-type-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            document.querySelector(`.reputation-type-btn.${type}`).classList.add('selected');
+        }
+        
+        async function submitReputation() {
+            if (!selectedReputationType) {
+                alert('Por favor selecciona un tipo de reputación');
+                return;
+            }
+            
+            const comment = document.getElementById('reputation-comment-input').value.trim();
+            
+            try {
+                const response = await fetch('/api/reputation', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        toUserId: reputationTargetUserId,
+                        type: selectedReputationType,
+                        comment: comment || null
+                    })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Error al dar reputación');
+                }
+                
+                alert(`✓ Reputación ${selectedReputationType} enviada correctamente a ${reputationTargetUsername}`);
+                closeReputationModal();
+                location.reload();
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error: ' + error.message);
+            }
+        }
+        
+        // Cerrar modal al hacer clic fuera
+        window.onclick = function(event) {
+            const modal = document.getElementById('reputation-modal');
+            if (event.target === modal) {
+                closeReputationModal();
+            }
+        };
     </script>
+    
+    <!-- Modal de Reputación -->
+    <div id="reputation-modal" class="reputation-modal">
+        <div class="reputation-modal-content">
+            <div class="reputation-modal-header">
+                Evaluar a <span id="reputation-modal-username">Usuario</span>
+            </div>
+            <div class="reputation-modal-body">
+                <div class="reputation-type-selector">
+                    <button class="reputation-type-btn positive" onclick="selectReputationType('positive')">
+                        ⭐ Positivo (+1)
+                    </button>
+                    <button class="reputation-type-btn neutral" onclick="selectReputationType('neutral')">
+                        🔶 Neutral (0)
+                    </button>
+                    <button class="reputation-type-btn negative" onclick="selectReputationType('negative')">
+                        ⛔ Negativo (-1)
+                    </button>
+                </div>
+                <textarea id="reputation-comment-input" class="reputation-comment-input" placeholder="Comentario (opcional)..."></textarea>
+                <div class="reputation-modal-actions">
+                    <button class="reputation-btn reputation-btn-cancel" onclick="closeReputationModal()">Cancelar</button>
+                    <button class="reputation-btn reputation-btn-submit" onclick="submitReputation()">Enviar Reputación</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

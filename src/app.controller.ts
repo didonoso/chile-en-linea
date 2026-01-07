@@ -84,6 +84,14 @@ export class AppController {
   }
 
   /**
+   * Renderiza la página de reporte de reputación
+   */
+  @Get('reputation/:username')
+  getReputationPage(@Res() res: Response, @Param('username') username: string) {
+    return res.sendFile(join(__dirname, '..', 'public', 'reputation.html'));
+  }
+
+  /**
    * Sirve el archivo CSS principal
    */
   @Get('styles.css')
@@ -131,13 +139,16 @@ export class AppController {
   /**
    * Crea un nuevo post en una categoría
    * @param id ID de la categoría
-   * @param postData Datos del post (title, content, authorId)
+   * @param postData Datos del post (title, content)
+   * @param req Request con usuario autenticado
    * @returns Post creado con información completa
    */
+  @UseGuards(JwtAuthGuard)
   @Post('api/categories/:id/posts')
   async createPost(
     @Param('id', ParseIntPipe) id: number,
-    @Body() postData: { title: string; content: string; authorId: number }
+    @Body() postData: { title: string; content: string },
+    @Request() req
   ) {
     // Validación de datos
     if (!postData.title || postData.title.trim().length === 0) {
@@ -156,11 +167,12 @@ export class AppController {
       throw new HttpException('El contenido no puede exceder 50000 caracteres', HttpStatus.BAD_REQUEST);
     }
 
-    if (!postData.authorId || postData.authorId <= 0) {
-      throw new HttpException('ID de autor inválido', HttpStatus.BAD_REQUEST);
+    const authorId = req.user?.sub || req.user?.id;
+    if (!authorId) {
+      throw new HttpException('Usuario no autenticado', HttpStatus.UNAUTHORIZED);
     }
 
-    return this.appService.createPost(id, postData);
+    return this.appService.createPost(id, { ...postData, authorId });
   }
 
   /**
@@ -196,13 +208,16 @@ export class AppController {
   /**
    * Crea un comentario en un post
    * @param postId ID del post
-   * @param commentData Datos del comentario (content, authorId)
+   * @param commentData Datos del comentario (content)
+   * @param req Request con usuario autenticado
    * @returns Comentario creado
    */
+  @UseGuards(JwtAuthGuard)
   @Post('api/posts/:id/comments')
   async createComment(
     @Param('id', ParseIntPipe) postId: number,
-    @Body() commentData: { content: string; authorId: number }
+    @Body() commentData: { content: string },
+    @Request() req
   ) {
     if (!commentData.content || commentData.content.trim().length === 0) {
       throw new HttpException('El contenido es requerido', HttpStatus.BAD_REQUEST);
@@ -212,11 +227,12 @@ export class AppController {
       throw new HttpException('El contenido no puede exceder 50000 caracteres', HttpStatus.BAD_REQUEST);
     }
 
-    if (!commentData.authorId || commentData.authorId <= 0) {
-      throw new HttpException('ID de autor inválido', HttpStatus.BAD_REQUEST);
+    const authorId = req.user?.sub || req.user?.id;
+    if (!authorId) {
+      throw new HttpException('Usuario no autenticado', HttpStatus.UNAUTHORIZED);
     }
 
-    return this.appService.createComment(postId, commentData);
+    return this.appService.createComment(postId, { ...commentData, authorId });
   }
 
   /**
@@ -407,6 +423,50 @@ export class AppController {
         HttpStatus.BAD_REQUEST
       );
     }
+  }
+
+  /**
+   * Obtiene el reporte de reputación de un usuario
+   */
+  @Get('api/reputation/:username')
+  async getReputationReport(@Param('username') username: string) {
+    return this.appService.getReputationReport(username);
+  }
+
+  /**
+   * Da reputación a un usuario
+   */
+  @UseGuards(JwtAuthGuard)
+  @Post('api/reputation')
+  async giveReputation(
+    @Request() req,
+    @Body() body: { toUserId: number; type: string; comment?: string }
+  ) {
+    try {
+      const fromUserId = req.user?.sub || req.user?.id;
+      return await this.appService.giveReputation(fromUserId, body.toUserId, body.type, body.comment);
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(
+        error.message || 'Error al dar reputación',
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  /**
+   * Elimina una reputación (solo quien la dio puede eliminarla)
+   */
+  @UseGuards(JwtAuthGuard)
+  @Delete('api/reputation/:id')
+  async deleteReputation(
+    @Param('id', ParseIntPipe) reputationId: number,
+    @Request() req
+  ) {
+    const userId = req.user?.sub || req.user?.id;
+    return this.appService.deleteReputation(reputationId, userId);
   }
 }
 

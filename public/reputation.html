@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Reputación - Chile en Línea</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/auth.js" defer></script>
+    <style>
+        .reputation-report-container {
+            background: white;
+            border: 1px solid #ccc;
+            margin: 20px 0;
+        }
+        
+        .reputation-header {
+            background: linear-gradient(to bottom, #0066a8 0%, #005691 100%);
+            color: white;
+            padding: 12px 15px;
+            font-weight: bold;
+            font-size: 14px;
+            border-bottom: 1px solid #004a7f;
+        }
+        
+        .reputation-summary {
+            background: #f5f5f5;
+            padding: 15px;
+            border-bottom: 1px solid #ccc;
+        }
+        
+        .reputation-user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .reputation-user-name {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .reputation-user-group {
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 3px;
+            color: white;
+        }
+        
+        .reputation-totals {
+            margin: 15px 0;
+        }
+        
+        .reputation-totals p {
+            margin: 5px 0;
+            font-size: 13px;
+        }
+        
+        .reputation-stats-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        .reputation-stats-table th {
+            background: #e4e4e4;
+            padding: 8px;
+            text-align: center;
+            font-weight: bold;
+            border: 1px solid #ccc;
+            font-size: 12px;
+        }
+        
+        .reputation-stats-table td {
+            padding: 8px;
+            text-align: center;
+            border: 1px solid #ccc;
+            font-size: 12px;
+        }
+        
+        .reputation-comments-section {
+            padding: 15px;
+        }
+        
+        .reputation-comments-header {
+            background: #e4e4e4;
+            padding: 8px 10px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+        
+        .reputation-comment {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 10px;
+        }
+        
+        .reputation-comment:last-child {
+            border-bottom: none;
+        }
+        
+        .reputation-comment-positive {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+        }
+        
+        .reputation-comment-neutral {
+            background: #f5f5f5;
+            border-left: 4px solid #9e9e9e;
+        }
+        
+        .reputation-comment-negative {
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+        }
+        
+        .reputation-comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+        
+        .reputation-comment-user {
+            font-weight: bold;
+            color: #0066cc;
+            text-decoration: none;
+        }
+        
+        .reputation-comment-user:hover {
+            text-decoration: underline;
+        }
+        
+        .reputation-comment-date {
+            color: #666;
+        }
+        
+        .reputation-comment-type {
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+        
+        .reputation-type-positive {
+            background: #4caf50;
+            color: white;
+        }
+        
+        .reputation-type-neutral {
+            background: #9e9e9e;
+            color: white;
+        }
+        
+        .reputation-type-negative {
+            background: #f44336;
+            color: white;
+        }
+        
+        .reputation-comment-text {
+            color: #333;
+            font-size: 13px;
+            line-height: 1.5;
+            font-style: italic;
+        }
+        
+        .reputation-delete-btn {
+            background: #d32f2f;
+            color: white;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 11px;
+            margin-left: 10px;
+        }
+        
+        .reputation-delete-btn:hover {
+            background: #b71c1c;
+        }
+        
+        .no-reputation {
+            text-align: center;
+            padding: 30px;
+            color: #666;
+            font-style: italic;
+        }
+        
+        .rate-user-button {
+            background: linear-gradient(to bottom, #0066a8 0%, #005691 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+        
+        .rate-user-button:hover {
+            background: linear-gradient(to bottom, #0077c2 0%, #0066a8 100%);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="forum-header">
+            <h1><a href="/" style="color: white; text-decoration: none;">Chile en Línea</a></h1>
+        </header>
+
+        <!-- Banner de bienvenida -->
+        <div id="welcome-banner" class="welcome-banner">
+            <div class="welcome-left">
+                <span class="welcome-icon">👋</span>
+                <span id="welcome-text" class="welcome-text">
+                    ¡Bienvenido a Chile en Línea! 
+                    <a href="/register" class="welcome-link">Regístrate</a> 
+                    o 
+                    <a href="/login" class="welcome-link">Inicia sesión</a> 
+                    para participar en la comunidad
+                </span>
+            </div>
+            <div class="welcome-right">
+                <a href="/members" class="welcome-action">👥 Lista de Miembros</a>
+                <a href="/groups" class="welcome-action">👥 Grupos</a>
+                <button id="logout-btn" class="welcome-action" style="display: none; background: none; border: none; color: #fff; cursor: pointer; font-size: 14px;">🚪 Cerrar Sesión</button>
+            </div>
+        </div>
+
+        <main class="forum-container">
+            <!-- Breadcrumb -->
+            <div class="breadcrumb">
+                <a href="/">Inicio</a> &raquo; 
+                <a href="#" id="breadcrumb-profile-link">Perfil de <span id="breadcrumb-username">Usuario</span></a> &raquo; 
+                <span>Reporte de Reputación</span>
+            </div>
+
+            <!-- Reputation Report -->
+            <div class="reputation-report-container">
+                <div class="reputation-header">
+                    Reporte de Reputación para <span id="header-username">Usuario</span>
+                </div>
+                
+                <div class="reputation-summary">
+                    <div class="reputation-user-info">
+                        <div class="reputation-user-name" id="user-display-name" style="color: inherit;">Usuario</div>
+                        <div class="reputation-user-group" id="user-group-badge">(Miembro)</div>
+                    </div>
+                    
+                    <div class="reputation-totals">
+                        <p><strong>Reputación Total:</strong> <span id="total-reputation">0</span></p>
+                        <p><strong>Positivos:</strong> <span id="total-positives">0</span></p>
+                        <p><strong>Neutrales:</strong> <span id="total-neutrals">0</span></p>
+                        <p><strong>Negativos:</strong> <span id="total-negatives">0</span></p>
+                    </div>
+                    
+                    <table class="reputation-stats-table">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th style="color: #4caf50;">Positivos</th>
+                                <th style="color: #9e9e9e;">Neutrales</th>
+                                <th style="color: #f44336;">Negativos</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Última semana</strong></td>
+                                <td id="week-positives">0</td>
+                                <td id="week-neutrals">0</td>
+                                <td id="week-negatives">0</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Último mes</strong></td>
+                                <td id="month-positives">0</td>
+                                <td id="month-neutrals">0</td>
+                                <td id="month-negatives">0</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Últimos 6 meses</strong></td>
+                                <td id="six-months-positives">0</td>
+                                <td id="six-months-neutrals">0</td>
+                                <td id="six-months-negatives">0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="reputation-comments-section">
+                    <div class="reputation-comments-header">Comentarios</div>
+                    <div id="reputation-comments-list">
+                        <div class="no-reputation">Cargando reputaciones...</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const pathParts = window.location.pathname.split('/');
+        const username = pathParts[pathParts.length - 1];
+        let currentUserId = null;
+        
+        loadReputationReport();
+
+        async function loadReputationReport() {
+            try {
+                // Obtener usuario actual
+                const meResponse = await fetch('/api/auth/me', { credentials: 'include' });
+                if (meResponse.ok) {
+                    const currentUser = await meResponse.json();
+                    currentUserId = currentUser.id;
+                }
+
+                const response = await fetch(`/api/reputation/${username}`, { credentials: 'include' });
+                if (!response.ok) {
+                    showError();
+                    return;
+                }
+
+                const data = await response.json();
+                displayReputationReport(data);
+            } catch (error) {
+                console.error('Error cargando reporte de reputación:', error);
+                showError();
+            }
+        }
+
+        function displayReputationReport(data) {
+            const { user, summary, periods, reputations } = data;
+            
+            // Actualizar breadcrumb
+            document.getElementById('breadcrumb-username').textContent = user.username;
+            document.getElementById('breadcrumb-profile-link').href = `/user/${user.username}`;
+            
+            // Actualizar encabezado
+            document.getElementById('header-username').textContent = user.username;
+            document.title = `Reporte de Reputación de ${user.username} - Chile en Línea`;
+            
+            // Actualizar nombre y grupo
+            const userNameElement = document.getElementById('user-display-name');
+            userNameElement.textContent = user.username;
+            if (user.userGroup && user.userGroup.color) {
+                userNameElement.style.color = user.userGroup.color;
+            }
+            
+            const groupBadge = document.getElementById('user-group-badge');
+            if (user.userGroup) {
+                groupBadge.textContent = `(${user.userGroup.name})`;
+                if (user.userGroup.color) {
+                    groupBadge.style.backgroundColor = user.userGroup.color;
+                }
+            }
+            
+            // Actualizar resumen
+            document.getElementById('total-reputation').textContent = summary.totalReputation;
+            document.getElementById('total-positives').textContent = summary.positives;
+            document.getElementById('total-neutrals').textContent = summary.neutrals;
+            document.getElementById('total-negatives').textContent = summary.negatives;
+            
+            // Actualizar estadísticas por periodo
+            document.getElementById('week-positives').textContent = periods.lastWeek.positives;
+            document.getElementById('week-neutrals').textContent = periods.lastWeek.neutrals;
+            document.getElementById('week-negatives').textContent = periods.lastWeek.negatives;
+            
+            document.getElementById('month-positives').textContent = periods.lastMonth.positives;
+            document.getElementById('month-neutrals').textContent = periods.lastMonth.neutrals;
+            document.getElementById('month-negatives').textContent = periods.lastMonth.negatives;
+            
+            document.getElementById('six-months-positives').textContent = periods.last6Months.positives;
+            document.getElementById('six-months-neutrals').textContent = periods.last6Months.neutrals;
+            document.getElementById('six-months-negatives').textContent = periods.last6Months.negatives;
+            
+            // Mostrar comentarios
+            displayReputations(reputations);
+        }
+
+        function displayReputations(reputations) {
+            const container = document.getElementById('reputation-comments-list');
+            
+            if (reputations.length === 0) {
+                container.innerHTML = '<div class="no-reputation">Este usuario aún no ha recibido ninguna reputación.</div>';
+                return;
+            }
+            
+            container.innerHTML = reputations.map(rep => {
+                const date = new Date(rep.createdAt);
+                const formattedDate = date.toLocaleDateString('es-CL', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                const typeLabel = rep.type === 'positive' ? 'Positivo (+1)' : 
+                                rep.type === 'neutral' ? 'Neutral (0)' : 
+                                'Negativo (-1)';
+                
+                const typeClass = rep.type === 'positive' ? 'positive' : 
+                                rep.type === 'neutral' ? 'neutral' : 
+                                'negative';
+                
+                const deleteButton = currentUserId === rep.fromUser.id ? 
+                    `<button class="reputation-delete-btn" onclick="deleteReputation(${rep.id})">Eliminar</button>` : '';
+                
+                return `
+                    <div class="reputation-comment reputation-comment-${typeClass}">
+                        <div class="reputation-comment-header">
+                            <div>
+                                <a href="/user/${rep.fromUser.username}" class="reputation-comment-user">${rep.fromUser.username}</a>
+                                <span class="reputation-comment-type reputation-type-${typeClass}">${typeLabel}</span>
+                                ${deleteButton}
+                            </div>
+                            <span class="reputation-comment-date">${formattedDate}</span>
+                        </div>
+                        ${rep.comment ? `<div class="reputation-comment-text">"${rep.comment}"</div>` : '<div class="reputation-comment-text" style="color: #999;">Sin comentario</div>'}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function deleteReputation(reputationId) {
+            if (!confirm('¿Estás seguro de eliminar esta reputación?')) return;
+            
+            try {
+                const response = await fetch(`/api/reputation/${reputationId}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Error al eliminar reputación');
+                }
+                
+                alert('✓ Reputación eliminada correctamente');
+                location.reload();
+            } catch (error) {
+                console.error('Error eliminando reputación:', error);
+                alert('Error: ' + error.message);
+            }
+        }
+
+        function showError() {
+            document.getElementById('reputation-comments-list').innerHTML = 
+                '<div class="no-reputation" style="color: #d32f2f;">Error al cargar el reporte de reputación.</div>';
+        }
+    </script>
+</body>
+</html>

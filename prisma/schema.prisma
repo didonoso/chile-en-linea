@@ -35,12 +35,14 @@ model User {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   
-  userGroupId Int       @default(1) // Por defecto: Registrados
+  userGroupId Int       @default(2) // Por defecto: Registrados
   userGroup   UserGroup @relation(fields: [userGroupId], references: [id])
   
   posts     Post[]
   comments  Comment[]
   likes     Like[]
+  givenReputations     Reputation[] @relation("GivenReputations")
+  receivedReputations  Reputation[] @relation("ReceivedReputations")
   
   @@index([userGroupId])
 }
@@ -113,4 +115,22 @@ model Like {
   post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
   
   @@unique([userId, postId])
+}
+
+// Modelo de Reputación
+model Reputation {
+  id        Int      @id @default(autoincrement())
+  type      String   // 'positive', 'neutral', 'negative'
+  comment   String?  @db.Text
+  createdAt DateTime @default(now())
+  
+  fromUserId Int
+  fromUser   User    @relation("GivenReputations", fields: [fromUserId], references: [id], onDelete: Cascade)
+  
+  toUserId   Int
+  toUser     User    @relation("ReceivedReputations", fields: [toUserId], references: [id], onDelete: Cascade)
+  
+  @@index([toUserId])
+  @@index([fromUserId])
+  @@index([createdAt])
 }

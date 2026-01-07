@@ -60,11 +60,12 @@
                                 <th class="col-joined">Registrado</th>
                                 <th class="col-lastvisit">Última Visita</th>
                                 <th class="col-postcount">Posts</th>
+                                <th class="col-reputation">Reputación</th>
                             </tr>
                         </thead>
                         <tbody id="members-tbody">
                             <tr>
-                                <td colspan="6" class="loading-cell">Cargando miembros...</td>
+                                <td colspan="7" class="loading-cell">Cargando miembros...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -112,7 +113,7 @@
             const tbody = document.getElementById('members-tbody');
             
             if (users.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="no-members">No hay miembros registrados</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" class="no-members">No hay miembros registrados</td></tr>';
                 return;
             }
 
@@ -134,6 +135,7 @@
                 const avatarInitials = user.username.substring(0, 2).toUpperCase();
                 const groupColor = user.userGroup?.color || '#000';
                 const groupName = user.userGroup?.name || 'Sin grupo';
+                const reputation = user.reputation || 0;
 
                 // Mostrar avatar real o iniciales
                 let avatarHTML;
@@ -155,6 +157,7 @@
                         <td class="member-joined">${joinedDate}</td>
                         <td class="member-lastvisit">${lastVisitDate}</td>
                         <td class="member-postcount">${user.postCount.toLocaleString()}</td>
+                        <td class="member-reputation" style="text-align: center;">${reputation}</td>
                     </tr>
                 `;
             }).join('');
@@ -223,7 +226,7 @@
 
         function showError() {
             const tbody = document.getElementById('members-tbody');
-            tbody.innerHTML = '<tr><td colspan="6" class="error-cell">Error al cargar los miembros</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" class="error-cell">Error al cargar los miembros</td></tr>';
         }
     </script>
 </body>
