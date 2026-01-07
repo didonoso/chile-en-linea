@@ -39,37 +39,9 @@
                     <button class="toggle-btn">▼</button>
                 </div>
 
-                <!-- Categoría: General Support -->
-                <div class="category-row">
-                    <div class="category-icon">
-                        <div class="icon-circle"></div>
-                    </div>
-                    
-                    <div class="category-info">
-                        <a href="/category"><h3 class="category-title">Soporte General</h3></a>
-                        <p class="category-description">Soporte general del foro, para cualquier consulta o problema.</p>
-                    </div>
-
-                    <div class="category-stats">
-                        <div class="stat">
-                            <span class="stat-number" id="posts-count">0</span>
-                            <span class="stat-label">Mensajes</span>
-                        </div>
-                        <div class="stat">
-                            <span class="stat-number" id="threads-count">0</span>
-                            <span class="stat-label">Temas</span>
-                        </div>
-                    </div>
-
-                    <div class="category-latest">
-                        <div class="latest-post" id="latest-post">
-                            <a href="#" class="latest-post-title" id="latest-post-title-link">Cargando...</a>
-                            <div class="latest-post-meta">
-                                <span class="latest-post-time" id="latest-post-time"></span>
-                                <span class="latest-post-author">por <a href="#" id="latest-post-author-link"></a></span>
-                            </div>
-                        </div>
-                    </div>
+                <!-- Categorías se cargarán dinámicamente -->
+                <div id="categories-container">
+                    <div style="text-align: center; padding: 20px; color: #666;">Cargando categorías...</div>
                 </div>
             </div>
 
@@ -89,48 +61,88 @@
     </div>
     <script src="/auth.js"></script>
     <script>
-        // Cargar estadísticas desde la API
-        fetch('/api/stats')
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('posts-count').textContent = data.posts.toLocaleString();
-                document.getElementById('threads-count').textContent = data.threads.toLocaleString();
+        // Cargar categorías desde la API
+        async function loadCategories() {
+            try {
+                const [categoriesResponse, statsResponse] = await Promise.all([
+                    fetch('/api/categories'),
+                    fetch('/api/stats')
+                ]);
                 
-                // Cargar último post
-                if (data.latestPost) {
-                    const timeAgo = getTimeAgo(new Date(data.latestPost.createdAt));
-                    const titleLink = document.getElementById('latest-post-title-link');
-                    const authorLink = document.getElementById('latest-post-author-link');
-                    
-                    titleLink.textContent = data.latestPost.title;
-                    titleLink.href = `/thread?slug=${data.latestPost.slug}`;
-                    
-                    document.getElementById('latest-post-time').textContent = timeAgo;
-                    
-                    authorLink.textContent = data.latestPost.author;
-                    authorLink.href = `/user/${data.latestPost.author}`;
-                    
-                    document.querySelector('.latest-post-author').style.display = '';
-                } else {
-                    document.getElementById('latest-post-title-link').textContent = 'No hay posts aún';
-                    document.getElementById('latest-post-title-link').href = '#';
-                    document.getElementById('latest-post-time').textContent = '';
-                    document.getElementById('latest-post-author-link').textContent = '';
-                    document.querySelector('.latest-post-author').style.display = 'none';
+                const categories = await categoriesResponse.json();
+                const stats = await statsResponse.json();
+                
+                const container = document.getElementById('categories-container');
+                
+                if (categories.length === 0) {
+                    container.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">No hay categorías disponibles</div>';
+                    return;
                 }
+                
+                container.innerHTML = categories.map(category => {
+                    const postCount = category._count?.posts || 0;
+                    
+                    return `
+                        <div class="category-row">
+                            <div class="category-icon">
+                                <div class="icon-circle"></div>
+                            </div>
+                            
+                            <div class="category-info">
+                                <a href="/category?id=${category.id}"><h3 class="category-title">${category.name}</h3></a>
+                                <p class="category-description">${category.description || ''}</p>
+                            </div>
 
+                            <div class="category-stats">
+                                <div class="stat">
+                                    <span class="stat-number">${(postCount + (stats.posts || 0)).toLocaleString()}</span>
+                                    <span class="stat-label">Mensajes</span>
+                                </div>
+                                <div class="stat">
+                                    <span class="stat-number">${postCount.toLocaleString()}</span>
+                                    <span class="stat-label">Temas</span>
+                                </div>
+                            </div>
+
+                            <div class="category-latest">
+                                <div class="latest-post">
+                                    ${stats.latestPost ? `
+                                        <a href="/thread?slug=${stats.latestPost.slug}" class="latest-post-title">${stats.latestPost.title}</a>
+                                        <div class="latest-post-meta">
+                                            <span class="latest-post-time">${getTimeAgo(new Date(stats.latestPost.createdAt))}</span>
+                                            <span class="latest-post-author">por <a href="/user/${stats.latestPost.author}">${stats.latestPost.author}</a></span>
+                                        </div>
+                                    ` : '<span style="color: #666;">No hay posts aún</span>'}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
                 // Cargar estadísticas del foro
-                if (data.boardStats) {
-                    document.getElementById('total-posts-stat').textContent = data.boardStats.totalPosts.toLocaleString();
-                    document.getElementById('total-threads-stat').textContent = data.boardStats.totalThreads.toLocaleString();
-                    document.getElementById('total-members-stat').textContent = data.boardStats.totalMembers.toLocaleString();
-                    document.getElementById('newest-member-stat').textContent = data.boardStats.newestMember || 'N/A';
-                    document.getElementById('newest-member-link').href = `/user/${data.boardStats.newestMember}`;
-                    document.getElementById('most-online-stat').textContent = data.boardStats.mostOnline || 0;
-                    document.getElementById('most-online-date').textContent = data.boardStats.mostOnlineDate || '--';
-                }
-            })
-            .catch(error => console.error('Error cargando estadísticas:', error));
+                loadBoardStats(stats);
+                
+            } catch (error) {
+                console.error('Error cargando categorías:', error);
+                document.getElementById('categories-container').innerHTML = 
+                    '<div style="text-align: center; padding: 20px; color: #d32f2f;">Error al cargar las categorías</div>';
+            }
+        }
+        
+        function loadBoardStats(stats) {
+            if (stats.boardStats) {
+                document.getElementById('total-posts-stat').textContent = stats.boardStats.totalPosts.toLocaleString();
+                document.getElementById('total-threads-stat').textContent = stats.boardStats.totalThreads.toLocaleString();
+                document.getElementById('total-members-stat').textContent = stats.boardStats.totalMembers.toLocaleString();
+                document.getElementById('newest-member-stat').textContent = stats.boardStats.newestMember || 'N/A';
+                document.getElementById('newest-member-link').href = `/user/${stats.boardStats.newestMember}`;
+                document.getElementById('most-online-stat').textContent = stats.boardStats.mostOnline || 0;
+                document.getElementById('most-online-date').textContent = stats.boardStats.mostOnlineDate || '--';
+            }
+        }
+        
+        // Cargar categorías al iniciar
+        loadCategories();
         
         // Función para calcular tiempo relativo
         function getTimeAgo(date) {
