@@ -57,6 +57,16 @@
                     <p>La mayor cantidad de usuarios en línea fue <strong id="most-online-stat">0</strong> el <strong id="most-online-date">--</strong></p>
                 </div>
             </div>
+
+            <!-- User Groups -->
+            <div class="forum-section">
+                <div class="section-header">
+                    <h2>Grupos de Usuarios</h2>
+                </div>
+                <div id="groups-container" class="user-groups-container">
+                    <div style="text-align: center; padding: 20px; color: #666;">Cargando grupos...</div>
+                </div>
+            </div>
         </main>
     </div>
     <script src="/auth.js"></script>
@@ -143,6 +153,43 @@
         
         // Cargar categorías al iniciar
         loadCategories();
+        
+        // Cargar grupos de usuarios
+        async function loadUserGroups() {
+            try {
+                const response = await fetch('/api/groups');
+                const groups = await response.json();
+                
+                const container = document.getElementById('groups-container');
+                
+                if (groups.length === 0) {
+                    container.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">No hay grupos disponibles</div>';
+                    return;
+                }
+                
+                container.innerHTML = groups
+                    .sort((a, b) => a.order - b.order)
+                    .map(group => {
+                        const userCount = group._count?.users || 0;
+                        const colorStyle = group.color ? `color: ${group.color};` : '';
+                        
+                        return `
+                            <a href="/group?id=${group.id}" class="user-group-badge" style="${colorStyle}">
+                                <span class="group-name">${group.name}</span>
+                                <span class="group-count">(${userCount})</span>
+                            </a>
+                        `;
+                    }).join('');
+                    
+            } catch (error) {
+                console.error('Error cargando grupos:', error);
+                document.getElementById('groups-container').innerHTML = 
+                    '<div style="text-align: center; padding: 20px; color: #d32f2f;">Error al cargar los grupos</div>';
+            }
+        }
+        
+        // Cargar grupos al iniciar
+        loadUserGroups();
         
         // Función para calcular tiempo relativo
         function getTimeAgo(date) {

@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grupo - Chile en Línea</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="forum-header">
+            <h1>Chile en Línea</h1>
+        </header>
+
+        <!-- Banner de bienvenida -->
+        <div id="welcome-banner" class="welcome-banner">
+            <div class="welcome-left">
+                <span class="welcome-icon">👥</span>
+                <span id="welcome-text" class="welcome-text">
+                    <a href="/" class="welcome-link">← Volver al Foro</a>
+                </span>
+            </div>
+            <div class="welcome-right">
+                <a href="/members" class="welcome-action">👥 Lista de Miembros</a>
+                <a href="/groups" class="welcome-action">👥 Grupos</a>
+                <button id="logout-btn" class="welcome-action" style="display: none; background: none; border: none; color: #fff; cursor: pointer; font-size: 14px;">🚪 Cerrar Sesión</button>
+            </div>
+        </div>
+
+        <main class="forum-container">
+            <!-- Header del Grupo -->
+            <div class="forum-section">
+                <div class="section-header" style="border-bottom: 3px solid #0066a8;">
+                    <h2 id="group-name" style="font-size: 24px;">Cargando grupo...</h2>
+                </div>
+                <div class="board-statistics">
+                    <p id="group-description" style="font-size: 15px; color: #666;">Cargando descripción...</p>
+                    <p><strong id="group-user-count">0</strong> miembros en este grupo</p>
+                </div>
+            </div>
+
+            <!-- Listado de Usuarios -->
+            <div class="forum-section">
+                <div class="section-header">
+                    <h2>Miembros del Grupo</h2>
+                </div>
+                
+                <div id="users-container" style="background: #fff;">
+                    <table class="members-table">
+                        <thead>
+                            <tr>
+                                <th style="text-align: left;">Usuario</th>
+                                <th style="text-align: center;">Reputación</th>
+                                <th style="text-align: center;">Posts</th>
+                                <th style="text-align: center;">Fecha de Registro</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-tbody">
+                            <tr>
+                                <td colspan="4" style="text-align: center; padding: 40px; color: #666;">
+                                    Cargando miembros...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="/auth.js"></script>
+    <script>
+        // Obtener el ID del grupo desde la URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const groupId = urlParams.get('id');
+
+        if (!groupId) {
+            document.getElementById('group-name').textContent = 'Error: Grupo no encontrado';
+            document.getElementById('group-description').textContent = 'No se especificó un ID de grupo válido.';
+            document.getElementById('users-tbody').innerHTML = `
+                <tr>
+                    <td colspan="4" style="text-align: center; padding: 40px; color: #d32f2f;">
+                        No se encontró el grupo solicitado
+                    </td>
+                </tr>
+            `;
+        } else {
+            loadGroupInfo();
+            loadGroupUsers();
+        }
+
+        // Cargar información del grupo
+        async function loadGroupInfo() {
+            try {
+                const response = await fetch(`/api/groups/${groupId}`);
+                if (!response.ok) throw new Error('Grupo no encontrado');
+                
+                const group = await response.json();
+                
+                document.getElementById('group-name').textContent = group.name;
+                document.getElementById('group-name').style.color = group.color || '#0f4c75';
+                document.getElementById('group-description').textContent = group.description || 'Este grupo no tiene descripción.';
+                
+            } catch (error) {
+                console.error('Error cargando información del grupo:', error);
+                document.getElementById('group-name').textContent = 'Error al cargar el grupo';
+                document.getElementById('group-description').textContent = 'No se pudo cargar la información del grupo.';
+            }
+        }
+
+        // Cargar usuarios del grupo
+        async function loadGroupUsers() {
+            try {
+                const response = await fetch(`/api/groups/${groupId}/users`);
+                if (!response.ok) throw new Error('Error al cargar usuarios');
+                
+                const users = await response.json();
+                
+                const tbody = document.getElementById('users-tbody');
+                
+                if (users.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="4" style="text-align: center; padding: 40px; color: #666;">
+                                No hay miembros en este grupo
+                            </td>
+                        </tr>
+                    `;
+                    document.getElementById('group-user-count').textContent = '0';
+                    return;
+                }
+                
+                document.getElementById('group-user-count').textContent = users.length;
+                
+                tbody.innerHTML = users.map(user => {
+                    const reputation = user.reputation || 0;
+                    const postCount = user._count?.posts || 0;
+                    const joinDate = new Date(user.createdAt).toLocaleDateString('es-CL', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                    
+                    // Generar avatar con iniciales
+                    let avatarHtml;
+                    if (user.avatar) {
+                        avatarHtml = `<img src="/uploads/avatars/${user.avatar}" 
+                                         alt="${user.username}" 
+                                         style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">`;
+                    } else {
+                        const initials = user.username.substring(0, 2).toUpperCase();
+                        const bgColor = user.userGroup?.color || '#0f4c75';
+                        avatarHtml = `<div style="width: 40px; height: 40px; border-radius: 50%; background: ${bgColor}; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px;">${initials}</div>`;
+                    }
+                    
+                    return `
+                        <tr>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 12px;">
+l                                    ${avatarHtml}
+                                    <a href="/user/${user.username}" 
+                                       style="font-weight: 600; color: ${user.userGroup?.color || '#0f4c75'}; text-decoration: none;">
+                                        ${user.username}
+                                    </a>
+                                </div>
+                            </td>
+                            <td style="text-align: center;">
+                                <span style="font-weight: 600; color: ${reputation >= 0 ? '#4caf50' : '#f44336'};">
+                                    ${reputation >= 0 ? '+' : ''}${reputation}
+                                </span>
+                            </td>
+                            <td style="text-align: center;">${postCount.toLocaleString()}</td>
+                            <td style="text-align: center;">${joinDate}</td>
+                        </tr>
+                    `;
+                }).join('');
+                
+            } catch (error) {
+                console.error('Error cargando usuarios del grupo:', error);
+                document.getElementById('users-tbody').innerHTML = `
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 40px; color: #d32f2f;">
+                            Error al cargar los miembros del grupo
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

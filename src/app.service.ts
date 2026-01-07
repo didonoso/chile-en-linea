@@ -610,6 +610,7 @@ export class AppService {
         order: group.order,
         color: group.color,
         isDefault: group.isDefault,
+        _count: group._count,
         userCount: group._count.users
       }));
     } catch (error) {

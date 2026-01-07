@@ -84,6 +84,14 @@ export class AppController {
   }
 
   /**
+   * Renderiza la página de grupo de usuarios
+   */
+  @Get('group')
+  getGroupPage(@Res() res: Response) {
+    return res.sendFile(join(__dirname, '..', 'public', 'group.html'));
+  }
+
+  /**
    * Renderiza la página de reporte de reputación
    */
   @Get('reputation/:username')
