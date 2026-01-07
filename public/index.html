@@ -63,10 +63,10 @@
 
                     <div class="category-latest">
                         <div class="latest-post" id="latest-post">
-                            <a href="#" class="latest-post-title" id="latest-post-title">Cargando...</a>
+                            <a href="#" class="latest-post-title" id="latest-post-title-link">Cargando...</a>
                             <div class="latest-post-meta">
                                 <span class="latest-post-time" id="latest-post-time"></span>
-                                <span class="latest-post-author">por <a href="#" id="latest-post-author"></a></span>
+                                <span class="latest-post-author">por <a href="#" id="latest-post-author-link"></a></span>
                             </div>
                         </div>
                     </div>
@@ -99,14 +99,23 @@
                 // Cargar último post
                 if (data.latestPost) {
                     const timeAgo = getTimeAgo(new Date(data.latestPost.createdAt));
-                    document.getElementById('latest-post-title').textContent = data.latestPost.title;
+                    const titleLink = document.getElementById('latest-post-title-link');
+                    const authorLink = document.getElementById('latest-post-author-link');
+                    
+                    titleLink.textContent = data.latestPost.title;
+                    titleLink.href = `/thread?slug=${data.latestPost.slug}`;
+                    
                     document.getElementById('latest-post-time').textContent = timeAgo;
-                    document.getElementById('latest-post-author').textContent = data.latestPost.author;
+                    
+                    authorLink.textContent = data.latestPost.author;
+                    authorLink.href = `/user/${data.latestPost.author}`;
+                    
                     document.querySelector('.latest-post-author').style.display = '';
                 } else {
-                    document.getElementById('latest-post-title').textContent = 'No hay posts aún';
+                    document.getElementById('latest-post-title-link').textContent = 'No hay posts aún';
+                    document.getElementById('latest-post-title-link').href = '#';
                     document.getElementById('latest-post-time').textContent = '';
-                    document.getElementById('latest-post-author').textContent = '';
+                    document.getElementById('latest-post-author-link').textContent = '';
                     document.querySelector('.latest-post-author').style.display = 'none';
                 }
 
