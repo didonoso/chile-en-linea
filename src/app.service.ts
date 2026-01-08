@@ -126,7 +126,13 @@ export class AppService {
           totalMembers: totalMembers,
           newestMember: newestMember?.username || 'N/A',
           mostOnline: 15,
-          mostOnlineDate: '05-01-2026, 02:27 PM'
+          mostOnlineDate: new Date().toLocaleDateString('es-CL', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+          })
         }
       };
     } catch (error) {
