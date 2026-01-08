@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Categorías - Chile en Línea</title>
+    <link rel="icon" href="/favicon.png" type="image/png">
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+        }
+
+        .categories-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+        }
+
+        .categories-table th,
+        .categories-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .categories-table th {
+            background: linear-gradient(to bottom, #0066a8 0%, #005691 100%);
+            color: white;
+            font-weight: 600;
+            border: none;
+        }
+
+        .categories-table tbody tr:hover {
+            background: #f9f9f9;
+        }
+
+        .btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s;
+            margin-right: 5px;
+        }
+
+        .btn-edit {
+            background: #2196f3;
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background: #1976d2;
+        }
+
+        .btn-delete {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #d32f2f;
+        }
+
+        .btn-primary {
+            background: #4caf50;
+            color: white;
+            padding: 10px 20px;
+            font-size: 14px;
+        }
+
+        .btn-primary:hover {
+            background: #388e3c;
+        }
+
+        .btn-cancel {
+            background: #757575;
+            color: white;
+            padding: 10px 20px;
+            font-size: 14px;
+        }
+
+        .btn-cancel:hover {
+            background: #616161;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-group small {
+            display: block;
+            margin-top: 5px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .edit-form {
+            display: none;
+        }
+
+        .edit-form.active {
+            display: table-row;
+        }
+
+        .edit-form td {
+            background: #f5f5f5;
+            padding: 20px;
+            border-left: 4px solid #2196f3;
+        }
+
+        .no-categories {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .section-header-custom {
+            background: linear-gradient(to bottom, #0066a8 0%, #005691 100%);
+            color: white;
+            padding: 15px 20px;
+            font-size: 18px;
+            font-weight: 600;
+            border-bottom: 3px solid #004578;
+        }
+
+        .forum-section {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="forum-header">
+            <h1>Chile en Línea</h1>
+        </header>
+
+        <div id="welcome-banner" class="welcome-banner">
+            <div class="welcome-left">
+                <span class="welcome-icon">📁</span>
+                <span id="welcome-text" class="welcome-text">
+                    Gestión de Categorías
+                </span>
+            </div>
+            <div class="welcome-right">
+                <a href="/" class="welcome-action">🏠 Inicio</a>
+                <a href="/admin" class="welcome-action">🛠️ Panel Admin</a>
+                <a href="/members" class="welcome-action">👥 Lista de Miembros</a>
+                <button id="logout-btn" class="welcome-action" style="display: none; background: none; border: none; color: #fff; cursor: pointer; font-size: 14px;">🚪 Cerrar Sesión</button>
+            </div>
+        </div>
+
+        <main class="forum-container">
+            <!-- Breadcrumb -->
+            <div class="breadcrumb">
+                <a href="/">Chile en Línea</a> &raquo; <a href="/admin">Panel de Administración</a> &raquo; <span>Categorías</span>
+            </div>
+
+            <!-- Formulario de Nueva Categoría -->
+            <div class="forum-section">
+                <div class="section-header-custom">
+                    ➕ Crear Nueva Categoría
+                </div>
+                <div style="background: #fff; padding: 20px;">
+                    <form id="create-form">
+                        <div class="form-group">
+                            <label for="name">Nombre *</label>
+                            <input type="text" id="name" name="name" required placeholder="Ej: Noticias de Chile">
+                        </div>
+                        <div class="form-group">
+                            <label for="slug">Slug (URL) *</label>
+                            <input type="text" id="slug" name="slug" required placeholder="Ej: noticias-chile">
+                            <small style="color: #666;">Solo letras minúsculas, números y guiones</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="description">Descripción</label>
+                            <textarea id="description" name="description" placeholder="Descripción de la categoría"></textarea>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Crear Categoría</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Lista de Categorías -->
+            <div class="forum-section" style="margin-top: 20px;">
+                <div class="section-header-custom">
+                    📋 Categorías Existentes
+                </div>
+                <div id="categories-list">
+                    <div class="no-categories">Cargando categorías...</div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="/auth.js"></script>
+    <script>
+        let categories = [];
+
+        // Verificar acceso de administrador
+        async function checkAdminAccess() {
+            try {
+                const response = await fetch('/api/auth/me', {
+                    credentials: 'include'
+                });
+
+                if (!response.ok || !(await response.json()).userGroupId === 4) {
+                    window.location.href = '/admin';
+                    return false;
+                }
+                return true;
+            } catch {
+                window.location.href = '/admin';
+                return false;
+            }
+        }
+
+        // Cargar categorías
+        async function loadCategories() {
+            try {
+                const response = await fetch('/api/categories');
+                categories = await response.json();
+                renderCategories();
+            } catch (error) {
+                console.error('Error cargando categorías:', error);
+                document.getElementById('categories-list').innerHTML = 
+                    '<div class="no-categories" style="color: #d32f2f;">Error al cargar las categorías</div>';
+            }
+        }
+
+        // Renderizar lista de categorías
+        function renderCategories() {
+            const container = document.getElementById('categories-list');
+            
+            if (categories.length === 0) {
+                container.innerHTML = '<div class="no-categories">No hay categorías creadas</div>';
+                return;
+            }
+
+            container.innerHTML = `
+                <table class="categories-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Slug</th>
+                            <th>Descripción</th>
+                            <th>Posts</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${categories.map(cat => `
+                            <tr>
+                                <td>${cat.id}</td>
+                                <td><strong>${cat.name}</strong></td>
+                                <td><code>${cat.slug}</code></td>
+                                <td>${cat.description || '<em>Sin descripción</em>'}</td>
+                                <td>${cat._count?.posts || 0}</td>
+                                <td>
+                                    <button class="btn btn-edit" onclick="editCategory(${cat.id})">✏️ Editar</button>
+                                    <button class="btn btn-delete" onclick="deleteCategory(${cat.id}, '${cat.name}')">🗑️ Eliminar</button>
+                                </td>
+                            </tr>
+                            <tr id="edit-row-${cat.id}" class="edit-form">
+                                <td colspan="6">
+                                    <form onsubmit="updateCategory(event, ${cat.id})">
+                                        <div class="form-group">
+                                            <label>Nombre *</label>
+                                            <input type="text" name="name" value="${cat.name}" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Slug *</label>
+                                            <input type="text" name="slug" value="${cat.slug}" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Descripción</label>
+                                            <textarea name="description">${cat.description || ''}</textarea>
+                                        </div>
+                                        <div class="form-actions">
+                                            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                                            <button type="button" class="btn btn-cancel" onclick="cancelEdit(${cat.id})">Cancelar</button>
+                                        </div>
+                                    </form>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        // Crear categoría
+        document.getElementById('create-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = {
+                name: formData.get('name'),
+                slug: formData.get('slug'),
+                description: formData.get('description')
+            };
+
+            try {
+                const response = await fetch('/api/categories', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    alert('Categoría creada exitosamente');
+                    e.target.reset();
+                    loadCategories();
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + (error.message || 'No se pudo crear la categoría'));
+                }
+            } catch (error) {
+                console.error('Error creando categoría:', error);
+                alert('Error al crear la categoría');
+            }
+        });
+
+        // Editar categoría
+        function editCategory(id) {
+            // Cerrar otros formularios de edición
+            document.querySelectorAll('.edit-form').forEach(form => {
+                form.classList.remove('active');
+            });
+            
+            // Abrir formulario de edición
+            document.getElementById(`edit-row-${id}`).classList.add('active');
+        }
+
+        // Cancelar edición
+        function cancelEdit(id) {
+            document.getElementById(`edit-row-${id}`).classList.remove('active');
+        }
+
+        // Actualizar categoría
+        async function updateCategory(event, id) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const data = {
+                name: formData.get('name'),
+                slug: formData.get('slug'),
+                description: formData.get('description')
+            };
+
+            try {
+                const response = await fetch(`/api/categories/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    alert('Categoría actualizada exitosamente');
+                    cancelEdit(id);
+                    loadCategories();
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + (error.message || 'No se pudo actualizar la categoría'));
+                }
+            } catch (error) {
+                console.error('Error actualizando categoría:', error);
+                alert('Error al actualizar la categoría');
+            }
+        }
+
+        // Eliminar categoría
+        async function deleteCategory(id, name) {
+            if (!confirm(`¿Estás seguro de eliminar la categoría "${name}"?\n\nATENCIÓN: Esto también eliminará todos los posts asociados.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/categories/${id}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    alert('Categoría eliminada exitosamente');
+                    loadCategories();
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + (error.message || 'No se pudo eliminar la categoría'));
+                }
+            } catch (error) {
+                console.error('Error eliminando categoría:', error);
+                alert('Error al eliminar la categoría');
+            }
+        }
+
+        // Auto-generar slug al escribir el nombre
+        document.getElementById('name').addEventListener('input', (e) => {
+            const slug = e.target.value
+                .toLowerCase()
+                .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // Quitar acentos
+                .replace(/[^a-z0-9\s-]/g, '') // Solo letras, números, espacios y guiones
+                .replace(/\s+/g, '-') // Espacios a guiones
+                .replace(/-+/g, '-') // Múltiples guiones a uno
+                .trim();
+            
+            document.getElementById('slug').value = slug;
+        });
+
+        // Inicializar
+        checkAdminAccess().then(hasAccess => {
+            if (hasAccess) {
+                loadCategories();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -84,6 +84,30 @@ export class AppController {
   }
 
   /**
+   * Renderiza la página de grupo de usuarios
+   */
+  @Get('group')
+  getGroupPage(@Res() res: Response) {
+    return res.sendFile(join(__dirname, '..', 'public', 'group.html'));
+  }
+
+  /**
+   * Renderiza el panel de administrador
+   */
+  @Get('admin')
+  getAdminPanel(@Res() res: Response) {
+    return res.sendFile(join(__dirname, '..', 'public', 'admin.html'));
+  }
+
+  /**
+   * Renderiza la página de gestión de categorías
+   */
+  @Get('admin/categories')
+  getAdminCategories(@Res() res: Response) {
+    return res.sendFile(join(__dirname, '..', 'public', 'admin-categories.html'));
+  }
+
+  /**
    * Renderiza la página de reporte de reputación
    */
   @Get('reputation/:username')
@@ -115,6 +139,49 @@ export class AppController {
   @Get('api/categories')
   async getCategories() {
     return this.appService.getCategories();
+  }
+
+  /**
+   * Crea una nueva categoría (solo administradores)
+   */
+  @Post('api/categories')
+  @UseGuards(JwtAuthGuard)
+  async createCategory(@Request() req, @Body() body: { name: string; slug: string; description?: string }) {
+    // Verificar que sea administrador
+    if (req.user.userGroupId !== 4) {
+      throw new HttpException('No tienes permisos para crear categorías', HttpStatus.FORBIDDEN);
+    }
+    return this.appService.createCategory(body.name, body.slug, body.description);
+  }
+
+  /**
+   * Actualiza una categoría existente (solo administradores)
+   */
+  @Put('api/categories/:id')
+  @UseGuards(JwtAuthGuard)
+  async updateCategory(
+    @Request() req,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { name: string; slug: string; description?: string }
+  ) {
+    // Verificar que sea administrador
+    if (req.user.userGroupId !== 4) {
+      throw new HttpException('No tienes permisos para actualizar categorías', HttpStatus.FORBIDDEN);
+    }
+    return this.appService.updateCategory(id, body.name, body.slug, body.description);
+  }
+
+  /**
+   * Elimina una categoría (solo administradores)
+   */
+  @Delete('api/categories/:id')
+  @UseGuards(JwtAuthGuard)
+  async deleteCategory(@Request() req, @Param('id', ParseIntPipe) id: number) {
+    // Verificar que sea administrador
+    if (req.user.userGroupId !== 4) {
+      throw new HttpException('No tienes permisos para eliminar categorías', HttpStatus.FORBIDDEN);
+    }
+    return this.appService.deleteCategory(id);
   }
 
   /**

@@ -179,6 +179,48 @@ body {
     text-decoration: underline;
 }
 
+/* User Groups Container */
+.user-groups-container {
+    background: #f9f9f9;
+    padding: 20px 30px;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+}
+
+.user-group-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: #fff;
+    border: 2px solid #e0e0e0;
+    border-radius: 20px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.user-group-badge:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border-color: currentColor;
+}
+
+.user-group-badge .group-name {
+    font-weight: 600;
+}
+
+.user-group-badge .group-count {
+    font-size: 12px;
+    opacity: 0.8;
+    font-weight: normal;
+}
+
 /* Category Row */
 .category-row {
     display: grid;

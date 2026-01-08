@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administrador - Chile en Línea</title>
+    <link rel="icon" href="/favicon.png" type="image/png">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .admin-panel {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .admin-panel-header {
+            background: linear-gradient(to bottom, #0066a8 0%, #005691 100%);
+            color: white;
+            padding: 15px 20px;
+            font-size: 18px;
+            font-weight: 600;
+            border-bottom: 3px solid #004578;
+        }
+
+        .admin-panel-content {
+            padding: 0;
+        }
+
+        .admin-section {
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .admin-section:last-child {
+            border-bottom: none;
+        }
+
+        .admin-section-title {
+            background: #f5f5f5;
+            padding: 12px 20px;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .admin-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 0;
+        }
+
+        .admin-option {
+            padding: 15px 20px;
+            border-right: 1px solid #e0e0e0;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            text-decoration: none;
+            color: inherit;
+            transition: background 0.2s;
+        }
+
+        .admin-option:hover {
+            background: #f9f9f9;
+        }
+
+        .admin-option-title {
+            font-weight: 600;
+            color: #0066a8;
+            font-size: 15px;
+        }
+
+        .admin-option-description {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        .access-denied {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .access-denied h2 {
+            color: #d32f2f;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .access-denied p {
+            color: #666;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="forum-header">
+            <h1>Chile en Línea</h1>
+        </header>
+
+        <!-- Banner de bienvenida -->
+        <div id="welcome-banner" class="welcome-banner">
+            <div class="welcome-left">
+                <span class="welcome-icon">🔧</span>
+                <span id="welcome-text" class="welcome-text">
+                    Panel de Administrador
+                </span>
+            </div>
+            <div class="welcome-right">
+                <a href="/" class="welcome-action">🏠 Inicio</a>
+                <a href="/members" class="welcome-action">👥 Lista de Miembros</a>
+                <button id="logout-btn" class="welcome-action" style="display: none; background: none; border: none; color: #fff; cursor: pointer; font-size: 14px;">🚪 Cerrar Sesión</button>
+            </div>
+        </div>
+
+        <main class="forum-container">
+            <!-- Panel de Administrador -->
+            <div id="admin-content" class="forum-section" style="display: none;">
+                <div class="admin-panel">
+                    <div class="admin-panel-header">
+                        🛠️ Panel de Control de Administrador
+                    </div>
+                    <div class="admin-panel-content">
+                        <!-- Gestión de Foro -->
+                        <div class="admin-section">
+                            <div class="admin-section-title">📋 Gestión del Foro</div>
+                            <div class="admin-options">
+                                <a href="/groups" class="admin-option">
+                                    <div class="admin-option-title">👥 Grupos de Usuario</div>
+                                    <div class="admin-option-description">
+                                        Administrar grupos de usuarios, permisos y colores.
+                                    </div>
+                                </a>
+                                <a href="/admin/categories" class="admin-option">
+                                    <div class="admin-option-title">📁 Categorías</div>
+                                    <div class="admin-option-description">
+                                        Crear, editar o eliminar categorías del foro.
+                                    </div>
+                                </a>
+                                <a href="#" class="admin-option" onclick="alert('Próximamente'); return false;">
+                                    <div class="admin-option-title">⚙️ Configuración</div>
+                                    <div class="admin-option-description">
+                                        Ajustes generales del foro y personalización.
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Gestión de Usuarios -->
+                        <div class="admin-section">
+                            <div class="admin-section-title">👤 Gestión de Usuarios</div>
+                            <div class="admin-options">
+                                <a href="/members" class="admin-option">
+                                    <div class="admin-option-title">👥 Ver Usuarios</div>
+                                    <div class="admin-option-description">
+                                        Lista completa de usuarios registrados.
+                                    </div>
+                                </a>
+                                <a href="#" class="admin-option" onclick="alert('Próximamente'); return false;">
+                                    <div class="admin-option-title">🔨 Moderación</div>
+                                    <div class="admin-option-description">
+                                        Banear, advertir o suspender usuarios.
+                                    </div>
+                                </a>
+                                <a href="#" class="admin-option" onclick="alert('Próximamente'); return false;">
+                                    <div class="admin-option-title">📊 Estadísticas</div>
+                                    <div class="admin-option-description">
+                                        Estadísticas detalladas de usuarios y actividad.
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Contenido -->
+                        <div class="admin-section">
+                            <div class="admin-section-title">📝 Gestión de Contenido</div>
+                            <div class="admin-options">
+                                <a href="#" class="admin-option" onclick="alert('Próximamente'); return false;">
+                                    <div class="admin-option-title">📌 Posts Pendientes</div>
+                                    <div class="admin-option-description">
+                                        Revisar y aprobar posts reportados o pendientes.
+                                    </div>
+                                </a>
+                                <a href="#" class="admin-option" onclick="alert('Próximamente'); return false;">
+                                    <div class="admin-option-title">🗑️ Papelera</div>
+                                    <div class="admin-option-description">
+                                        Posts y comentarios eliminados recientemente.
+                                    </div>
+                                </a>
+                                <a href="#" class="admin-option" onclick="alert('Próximamente'); return false;">
+                                    <div class="admin-option-title">🔍 Logs de Moderación</div>
+                                    <div class="admin-option-description">
+                                        Historial de acciones de moderación realizadas.
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Herramientas -->
+                        <div class="admin-section">
+                            <div class="admin-section-title">🔧 Herramientas</div>
+                            <div class="admin-options">
+                                <a href="#" class="admin-option" onclick="alert('Próximamente'); return false;">
+                                    <div class="admin-option-title">💾 Respaldo</div>
+                                    <div class="admin-option-description">
+                                        Crear y descargar respaldos de la base de datos.
+                                    </div>
+                                </a>
+                                <a href="#" class="admin-option" onclick="alert('Próximamente'); return false;">
+                                    <div class="admin-option-title">🧹 Mantenimiento</div>
+                                    <div class="admin-option-description">
+                                        Optimizar tablas y limpiar datos antiguos.
+                                    </div>
+                                </a>
+                                <a href="#" class="admin-option" onclick="alert('Próximamente'); return false;">
+                                    <div class="admin-option-title">📧 Enviar Email Masivo</div>
+                                    <div class="admin-option-description">
+                                        Enviar anuncios o notificaciones a todos los usuarios.
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mensaje de Acceso Denegado -->
+            <div id="access-denied" class="forum-section" style="display: none;">
+                <div class="access-denied">
+                    <h2>🚫 Acceso Denegado</h2>
+                    <p>No tienes permisos para acceder al Panel de Administrador.</p>
+                    <p style="margin-top: 20px;">
+                        <a href="/" style="color: #0066a8; text-decoration: none; font-weight: 600;">← Volver al Foro</a>
+                    </p>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="/auth.js"></script>
+    <script>
+        // Verificar si el usuario es administrador
+        async function checkAdminAccess() {
+            try {
+                const response = await fetch('/api/auth/me', {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    // No autenticado, mostrar acceso denegado
+                    document.getElementById('admin-content').style.display = 'none';
+                    document.getElementById('access-denied').style.display = 'block';
+                    return;
+                }
+
+                const user = await response.json();
+
+                // Verificar si es administrador (userGroupId === 4)
+                if (user.userGroupId === 4) {
+                    document.getElementById('admin-content').style.display = 'block';
+                    document.getElementById('access-denied').style.display = 'none';
+                } else {
+                    document.getElementById('admin-content').style.display = 'none';
+                    document.getElementById('access-denied').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error verificando acceso:', error);
+                document.getElementById('admin-content').style.display = 'none';
+                document.getElementById('access-denied').style.display = 'block';
+            }
+        }
+
+        // Verificar acceso al cargar la página
+        checkAdminAccess();
+    </script>
+</body>
+</html>

@@ -49,12 +49,13 @@ export class AuthService {
         id: true,
         email: true,
         username: true,
+        userGroupId: true,
         createdAt: true,
       },
     });
 
     // Generar tokens
-    const tokens = await this.generateTokens(user.id, user.username);
+    const tokens = await this.generateTokens(user.id, user.username, user.userGroupId);
 
     return {
       user,
@@ -111,7 +112,7 @@ export class AuthService {
       data: { lastLoginAt: new Date() }
     });
 
-    const tokens = await this.generateTokens(user.id, user.username);
+    const tokens = await this.generateTokens(user.id, user.username, user.userGroupId);
 
     return {
       user: {
@@ -126,8 +127,13 @@ export class AuthService {
   /**
    * Genera tokens JWT
    */
-  async generateTokens(userId: number, username: string) {
-    const payload = { sub: userId, username };
+  async generateTokens(userId: number, username: string, userGroupId?: number) {
+    const payload: any = { sub: userId, username };
+    
+    // Incluir userGroupId en el payload si está disponible
+    if (userGroupId !== undefined) {
+      payload.userGroupId = userGroupId;
+    }
 
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload, { expiresIn: '7d' }),
