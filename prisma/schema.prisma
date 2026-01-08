@@ -43,6 +43,8 @@ model User {
   likes     Like[]
   givenReputations     Reputation[] @relation("GivenReputations")
   receivedReputations  Reputation[] @relation("ReceivedReputations")
+  moderationActions    ModerationAction[] @relation("ModeratedUser")
+  performedModerations ModerationAction[] @relation("ModeratorActions")
   
   @@index([userGroupId])
 }
@@ -144,4 +146,24 @@ model Setting {
   updatedAt DateTime @updatedAt
   
   @@index([key])
+}
+
+// Modelo de Moderación (baneos, suspensiones, advertencias)
+model ModerationAction {
+  id          Int      @id @default(autoincrement())
+  type        String   // 'ban', 'suspend', 'warn'
+  reason      String?  @db.Text
+  expiresAt   DateTime? // Para suspensiones temporales
+  createdAt   DateTime @default(now())
+  
+  userId      Int
+  user        User     @relation("ModeratedUser", fields: [userId], references: [id], onDelete: Cascade)
+  
+  moderatorId Int
+  moderator   User     @relation("ModeratorActions", fields: [moderatorId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([moderatorId])
+  @@index([type])
+  @@index([expiresAt])
 }

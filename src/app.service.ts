@@ -1236,5 +1236,151 @@ export class AppService {
       throw error;
     }
   }
+
+  /**
+   * Buscar usuarios por nombre o email
+   */
+  async searchUsers(query: string) {
+    try {
+      return await this.prisma.user.findMany({
+        where: {
+          OR: [
+            { username: { contains: query, mode: 'insensitive' } },
+            { email: { contains: query, mode: 'insensitive' } }
+          ]
+        },
+        select: {
+          id: true,
+          username: true,
+          email: true
+        },
+        take: 10
+      });
+    } catch (error) {
+      this.logger.error('Error buscando usuarios:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Banear un usuario permanentemente
+   */
+  async banUser(moderatorId: number, userId: number, reason: string) {
+    try {
+      const action = await this.prisma.moderationAction.create({
+        data: {
+          type: 'ban',
+          reason,
+          userId,
+          moderatorId
+        }
+      });
+
+      this.logger.log(`Usuario ${userId} baneado por moderador ${moderatorId}`);
+      return { success: true, message: 'Usuario baneado exitosamente', action };
+    } catch (error) {
+      this.logger.error('Error baneando usuario:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Enviar advertencia a un usuario
+   */
+  async warnUser(moderatorId: number, userId: number, reason: string) {
+    try {
+      const action = await this.prisma.moderationAction.create({
+        data: {
+          type: 'warn',
+          reason,
+          userId,
+          moderatorId
+        }
+      });
+
+      this.logger.log(`Usuario ${userId} advertido por moderador ${moderatorId}`);
+      return { success: true, message: 'Advertencia enviada exitosamente', action };
+    } catch (error) {
+      this.logger.error('Error enviando advertencia:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Suspender un usuario temporalmente
+   */
+  async suspendUser(moderatorId: number, userId: number, days: number, reason: string) {
+    try {
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + days);
+
+      const action = await this.prisma.moderationAction.create({
+        data: {
+          type: 'suspend',
+          reason,
+          expiresAt,
+          userId,
+          moderatorId
+        }
+      });
+
+      this.logger.log(`Usuario ${userId} suspendido por ${days} días por moderador ${moderatorId}`);
+      return { success: true, message: `Usuario suspendido por ${days} días`, action };
+    } catch (error) {
+      this.logger.error('Error suspendiendo usuario:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtener usuarios baneados y suspendidos
+   */
+  async getBannedUsers() {
+    try {
+      return await this.prisma.moderationAction.findMany({
+        where: {
+          type: { in: ['ban', 'suspend'] }
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              username: true,
+              email: true
+            }
+          },
+          moderator: {
+            select: {
+              id: true,
+              username: true
+            }
+          }
+        },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      });
+    } catch (error) {
+      this.logger.error('Error obteniendo usuarios baneados:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Desbanear usuario
+   */
+  async unbanUser(actionId: number) {
+    try {
+      await this.prisma.moderationAction.delete({
+        where: { id: actionId }
+      });
+
+      this.logger.log(`Acción de moderación ${actionId} eliminada`);
+      return { success: true, message: 'Usuario desbaneado exitosamente' };
+    } catch (error) {
+      this.logger.error('Error desbaneando usuario:', error);
+      throw error;
+    }
+  }
 }
 
