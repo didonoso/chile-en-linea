@@ -134,3 +134,14 @@ model Reputation {
   @@index([fromUserId])
   @@index([createdAt])
 }
+
+// Modelo de Configuración del Foro
+model Setting {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
+  value     String   @db.Text
+  type      String   // 'string', 'number', 'boolean', 'json'
+  updatedAt DateTime @updatedAt
+  
+  @@index([key])
+}

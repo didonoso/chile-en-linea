@@ -957,5 +957,166 @@ export class AppService {
       throw error;
     }
   }
+
+  /**
+   * Obtiene la configuración del foro
+   */
+  async getSettings() {
+    try {
+      // Obtener todas las configuraciones de la base de datos
+      const settings = await this.prisma.setting.findMany();
+      
+      // Si no hay configuraciones, crear las por defecto
+      if (settings.length === 0) {
+        await this.initializeDefaultSettings();
+        return await this.getSettings(); // Llamada recursiva para obtener los valores inicializados
+      }
+      
+      // Convertir array de settings a objeto
+      const settingsObject = {};
+      settings.forEach(setting => {
+        settingsObject[setting.key] = this.parseSettingValue(setting.value, setting.type);
+      });
+      
+      return settingsObject;
+    } catch (error) {
+      this.logger.error('Error obteniendo configuración:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene solo la configuración pública del foro
+   */
+  async getPublicSettings() {
+    try {
+      const allSettings = await this.getSettings();
+      
+      // Solo retornar configuraciones que son públicas
+      return {
+        siteName: allSettings['siteName'],
+        siteDescription: allSettings['siteDescription'],
+        siteUrl: allSettings['siteUrl'],
+        allowRegistration: allSettings['allowRegistration'],
+        allowGuests: allSettings['allowGuests'],
+        maintenanceMode: allSettings['maintenanceMode'],
+        maintenanceMessage: allSettings['maintenanceMessage']
+      };
+    } catch (error) {
+      this.logger.error('Error obteniendo configuración pública:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Actualiza la configuración del foro
+   */
+  async updateSettings(settings: any) {
+    try {
+      // Actualizar cada configuración en la base de datos
+      const updatePromises = Object.keys(settings).map(async key => {
+        const value = settings[key];
+        const type = typeof value === 'boolean' ? 'boolean' : 
+                     typeof value === 'number' ? 'number' : 'string';
+        
+        // Buscar si existe
+        const existing = await this.prisma.setting.findUnique({
+          where: { key }
+        });
+
+        if (existing) {
+          // Actualizar
+          return this.prisma.setting.update({
+            where: { key },
+            data: {
+              value: String(value),
+              type
+            }
+          });
+        } else {
+          // Crear
+          return this.prisma.setting.create({
+            data: {
+              key,
+              value: String(value),
+              type
+            }
+          });
+        }
+      });
+      
+      await Promise.all(updatePromises);
+      
+      this.logger.log('Configuración actualizada exitosamente');
+      return { 
+        success: true, 
+        message: 'Configuración actualizada exitosamente', 
+        settings 
+      };
+    } catch (error) {
+      this.logger.error('Error actualizando configuración:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Inicializa la configuración por defecto en la base de datos
+   * @private
+   */
+  private async initializeDefaultSettings() {
+    const defaultSettings = [
+      { key: 'siteName', value: 'Chile en Línea', type: 'string' },
+      { key: 'siteDescription', value: 'Foro comunitario de Chile', type: 'string' },
+      { key: 'siteUrl', value: 'http://localhost:3000', type: 'string' },
+      { key: 'postsPerPage', value: '20', type: 'number' },
+      { key: 'threadsPerPage', value: '25', type: 'number' },
+      { key: 'allowGuests', value: 'true', type: 'boolean' },
+      { key: 'allowGuestComments', value: 'false', type: 'boolean' },
+      { key: 'allowRegistration', value: 'true', type: 'boolean' },
+      { key: 'requireEmailVerification', value: 'false', type: 'boolean' },
+      { key: 'defaultUserGroup', value: '2', type: 'number' },
+      { key: 'minPasswordLength', value: '8', type: 'number' },
+      { key: 'moderateNewThreads', value: 'false', type: 'boolean' },
+      { key: 'moderateNewComments', value: 'false', type: 'boolean' },
+      { key: 'maxEditTime', value: '60', type: 'number' },
+      { key: 'maxAvatarSize', value: '5', type: 'number' },
+      { key: 'avatarDimensions', value: '200', type: 'number' },
+      { key: 'allowAvatars', value: 'true', type: 'boolean' },
+      { key: 'maintenanceMode', value: 'false', type: 'boolean' },
+      { key: 'maintenanceMessage', value: 'El foro está en mantenimiento. Volveremos pronto.', type: 'string' }
+    ];
+
+    // Insertar cada configuración individualmente
+    for (const setting of defaultSettings) {
+      const existing = await this.prisma.setting.findUnique({
+        where: { key: setting.key }
+      });
+
+      if (!existing) {
+        await this.prisma.setting.create({
+          data: setting
+        });
+      }
+    }
+
+    this.logger.log('Configuración por defecto inicializada');
+  }
+
+  /**
+   * Parsea el valor de un setting según su tipo
+   * @private
+   */
+  private parseSettingValue(value: string, type: string): any {
+    switch (type) {
+      case 'boolean':
+        return value === 'true';
+      case 'number':
+        return parseInt(value);
+      case 'json':
+        return JSON.parse(value);
+      default:
+        return value;
+    }
+  }
 }
 

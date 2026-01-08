@@ -108,6 +108,14 @@ export class AppController {
   }
 
   /**
+   * Renderiza la página de configuración
+   */
+  @Get('admin/settings')
+  getAdminSettings(@Res() res: Response) {
+    return res.sendFile(join(__dirname, '..', 'public', 'admin-settings.html'));
+  }
+
+  /**
    * Renderiza la página de reporte de reputación
    */
   @Get('reputation/:username')
@@ -182,6 +190,38 @@ export class AppController {
       throw new HttpException('No tienes permisos para eliminar categorías', HttpStatus.FORBIDDEN);
     }
     return this.appService.deleteCategory(id);
+  }
+
+  /**
+   * Obtiene la configuración del foro (solo administradores)
+   */
+  @Get('api/settings')
+  @UseGuards(JwtAuthGuard)
+  async getSettings(@Request() req) {
+    if (req.user.userGroupId !== 4) {
+      throw new HttpException('No tienes permisos para ver la configuración', HttpStatus.FORBIDDEN);
+    }
+    return this.appService.getSettings();
+  }
+
+  /**
+   * Obtiene la configuración pública del foro (sin autenticación)
+   */
+  @Get('api/settings/public')
+  async getPublicSettings() {
+    return this.appService.getPublicSettings();
+  }
+
+  /**
+   * Actualiza la configuración del foro (solo administradores)
+   */
+  @Put('api/settings')
+  @UseGuards(JwtAuthGuard)
+  async updateSettings(@Request() req, @Body() settings: any) {
+    if (req.user.userGroupId !== 4) {
+      throw new HttpException('No tienes permisos para modificar la configuración', HttpStatus.FORBIDDEN);
+    }
+    return this.appService.updateSettings(settings);
   }
 
   /**
