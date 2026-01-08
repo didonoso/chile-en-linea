@@ -116,6 +116,14 @@ export class AppController {
   }
 
   /**
+   * Renderiza la página de gestión de usuarios
+   */
+  @Get('admin/users')
+  getAdminUsers(@Res() res: Response) {
+    return res.sendFile(join(__dirname, '..', 'public', 'admin-users.html'));
+  }
+
+  /**
    * Renderiza la página de reporte de reputación
    */
   @Get('reputation/:username')
@@ -222,6 +230,46 @@ export class AppController {
       throw new HttpException('No tienes permisos para modificar la configuración', HttpStatus.FORBIDDEN);
     }
     return this.appService.updateSettings(settings);
+  }
+
+  /**
+   * Obtiene todos los usuarios (solo administradores)
+   */
+  @Get('api/admin/users')
+  @UseGuards(JwtAuthGuard)
+  async getAllUsers(@Request() req) {
+    if (req.user.userGroupId !== 4) {
+      throw new HttpException('No tienes permisos para ver usuarios', HttpStatus.FORBIDDEN);
+    }
+    return this.appService.getAllUsersAdmin();
+  }
+
+  /**
+   * Actualiza un usuario (solo administradores)
+   */
+  @Put('api/admin/users/:id')
+  @UseGuards(JwtAuthGuard)
+  async updateUser(
+    @Request() req,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() data: { username?: string; email?: string; userGroupId?: number }
+  ) {
+    if (req.user.userGroupId !== 4) {
+      throw new HttpException('No tienes permisos para editar usuarios', HttpStatus.FORBIDDEN);
+    }
+    return this.appService.updateUser(id, data);
+  }
+
+  /**
+   * Elimina un usuario (solo administradores)
+   */
+  @Delete('api/admin/users/:id')
+  @UseGuards(JwtAuthGuard)
+  async deleteUserAdmin(@Request() req, @Param('id', ParseIntPipe) id: number) {
+    if (req.user.userGroupId !== 4) {
+      throw new HttpException('No tienes permisos para eliminar usuarios', HttpStatus.FORBIDDEN);
+    }
+    return this.appService.deleteUser(id);
   }
 
   /**

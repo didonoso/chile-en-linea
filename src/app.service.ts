@@ -1118,5 +1118,123 @@ export class AppService {
         return value;
     }
   }
+
+  /**
+   * Obtiene todos los usuarios con información completa (para administradores)
+   */
+  async getAllUsersAdmin() {
+    try {
+      return await this.prisma.user.findMany({
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          avatar: true,
+          userGroupId: true,
+          createdAt: true,
+          lastLoginAt: true,
+          userGroup: {
+            select: {
+              id: true,
+              name: true,
+              color: true
+            }
+          },
+          _count: {
+            select: {
+              posts: true,
+              comments: true
+            }
+          }
+        },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      });
+    } catch (error) {
+      this.logger.error('Error obteniendo usuarios:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Actualiza un usuario
+   */
+  async updateUser(id: number, data: { username?: string; email?: string; userGroupId?: number }) {
+    try {
+      // Verificar si el username o email ya existen (si se están cambiando)
+      if (data.username) {
+        const existingUsername = await this.prisma.user.findFirst({
+          where: {
+            username: data.username,
+            NOT: { id }
+          }
+        });
+        if (existingUsername) {
+          throw new Error('El nombre de usuario ya está en uso');
+        }
+      }
+
+      if (data.email) {
+        const existingEmail = await this.prisma.user.findFirst({
+          where: {
+            email: data.email,
+            NOT: { id }
+          }
+        });
+        if (existingEmail) {
+          throw new Error('El email ya está en uso');
+        }
+      }
+
+      const updatedUser = await this.prisma.user.update({
+        where: { id },
+        data: {
+          ...(data.username && { username: data.username }),
+          ...(data.email && { email: data.email }),
+          ...(data.userGroupId && { userGroupId: data.userGroupId })
+        },
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          userGroupId: true
+        }
+      });
+
+      this.logger.log(`Usuario ${id} actualizado exitosamente`);
+      return { success: true, message: 'Usuario actualizado exitosamente', user: updatedUser };
+    } catch (error) {
+      this.logger.error('Error actualizando usuario:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Elimina un usuario y todo su contenido
+   */
+  async deleteUser(id: number) {
+    try {
+      // Verificar que el usuario existe
+      const user = await this.prisma.user.findUnique({
+        where: { id }
+      });
+
+      if (!user) {
+        throw new Error('Usuario no encontrado');
+      }
+
+      // Eliminar usuario (Prisma se encarga de las relaciones en cascada)
+      await this.prisma.user.delete({
+        where: { id }
+      });
+
+      this.logger.log(`Usuario ${id} (${user.username}) eliminado exitosamente`);
+      return { success: true, message: 'Usuario eliminado exitosamente' };
+    } catch (error) {
+      this.logger.error('Error eliminando usuario:', error);
+      throw error;
+    }
+  }
 }
 
