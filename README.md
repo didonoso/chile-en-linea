@@ -53,7 +53,10 @@ Aplicación de foro web moderna construida con NestJS, Prisma y PostgreSQL, con 
 - 📁 Gestión de Categorías (CRUD completo con auto-slug)
 - ⚙️ Configuración del Foro (persistente en BD)
 - 👥 Gestión de Usuarios (ver, editar, eliminar)
-- 🔨 Sistema de Moderación (baneos, suspensiones, advertencias)
+- 🔨 Sistema de Moderación (baneos permanentes, suspensiones temporales, advertencias)
+- 🚫 **Control de Baneos**: Campo `isBanned` en usuarios, no se eliminan cuentas
+- 🛡️ **Protección automática**: Usuarios baneados bloqueados en JWT Guard
+- 📄 **Página de baneo**: Información clara para usuarios suspendidos
 - 🎨 Configuración dinámica (nombre del sitio, modo mantenimiento, etc.)
 - 🔐 Control de acceso por userGroupId (admins: 4, mods: 3)
 
@@ -191,8 +194,10 @@ chile-en-linea/
 ### User
 - Información básica (email, username, password hasheado)
 - Avatar (path relativo)
+- **isBanned** (Boolean): Estado de baneo del usuario
 - Relación con UserGroup
 - Timestamps (createdAt, lastLoginAt)
+- **Nota**: Las cuentas no se eliminan realmente, solo se marcan como baneadas
 
 ### UserGroup
 - 7 grupos predefinidos con colores
@@ -372,14 +377,17 @@ Las contribuciones son bienvenidas. Por favor abre un issue primero para discuti
   - Admins y moderadores
 - `POST /api/moderation/ban` - Banear usuario 🔒🛡️
   - Body: `{ userId: number, reason: string }`
-  - Permanente
+  - Permanente, actualiza `isBanned = true`
+  - Bloquea acceso al foro automáticamente
 - `POST /api/moderation/warn` - Advertir usuario 🔒🛡️
   - Body: `{ userId: number, reason: string }`
 - `POST /api/moderation/suspend` - Suspender usuario 🔒🛡️
   - Body: `{ userId: number, days: number, reason: string }`
-  - Temporal
+  - Temporal, actualiza `isBanned = true`
+  - Bloquea acceso hasta expiración
 - `GET /api/moderation/banned` - Lista de baneados/suspendidos 🔒🛡️
 - `DELETE /api/moderation/unban/:id` - Desbanear usuario 🔒👑
+  - Actualiza `isBanned = false`
   - Solo administradores
 
 🔒 = Requiere autenticación JWT  
