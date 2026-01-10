@@ -50,12 +50,13 @@ export class AuthService {
         email: true,
         username: true,
         userGroupId: true,
+        isBanned: true,
         createdAt: true,
       },
     });
 
     // Generar tokens
-    const tokens = await this.generateTokens(user.id, user.username, user.userGroupId);
+    const tokens = await this.generateTokens(user.id, user.username, user.userGroupId, user.isBanned);
 
     return {
       user,
@@ -106,13 +107,18 @@ export class AuthService {
       throw new UnauthorizedException('Credenciales inválidas');
     }
 
+    // Verificar si el usuario está baneado
+    if (user.isBanned) {
+      throw new UnauthorizedException('Tu cuenta ha sido suspendida. Contacta con los administradores.');
+    }
+
     // Actualizar lastLoginAt
     await this.prisma.user.update({
       where: { id: user.id },
       data: { lastLoginAt: new Date() }
     });
 
-    const tokens = await this.generateTokens(user.id, user.username, user.userGroupId);
+    const tokens = await this.generateTokens(user.id, user.username, user.userGroupId, user.isBanned);
 
     return {
       user: {
@@ -127,12 +133,17 @@ export class AuthService {
   /**
    * Genera tokens JWT
    */
-  async generateTokens(userId: number, username: string, userGroupId?: number) {
+  async generateTokens(userId: number, username: string, userGroupId?: number, isBanned?: boolean) {
     const payload: any = { sub: userId, username };
     
     // Incluir userGroupId en el payload si está disponible
     if (userGroupId !== undefined) {
       payload.userGroupId = userGroupId;
+    }
+
+    // Incluir isBanned en el payload
+    if (isBanned !== undefined) {
+      payload.isBanned = isBanned;
     }
 
     const [accessToken, refreshToken] = await Promise.all([
@@ -169,6 +180,7 @@ export class AuthService {
         email: true,
         username: true,
         avatar: true,
+        isBanned: true,
         lastLoginAt: true,
         createdAt: true,
         updatedAt: true,

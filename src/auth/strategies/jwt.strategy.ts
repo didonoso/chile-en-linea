@@ -36,6 +36,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       userId: payload.sub,
       username: payload.username,
       userGroupId: payload.userGroupId, // Incluir userGroupId del JWT
+      isBanned: payload.isBanned || false, // Incluir isBanned del JWT
     };
   }
 }

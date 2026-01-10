@@ -1267,6 +1267,13 @@ export class AppService {
    */
   async banUser(moderatorId: number, userId: number, reason: string) {
     try {
+      // Actualizar usuario a baneado
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: { isBanned: true }
+      });
+
+      // Crear registro de moderación
       const action = await this.prisma.moderationAction.create({
         data: {
           type: 'ban',
@@ -1314,6 +1321,13 @@ export class AppService {
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + days);
 
+      // Actualizar usuario a baneado
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: { isBanned: true }
+      });
+
+      // Crear registro de suspensión
       const action = await this.prisma.moderationAction.create({
         data: {
           type: 'suspend',
@@ -1371,11 +1385,27 @@ export class AppService {
    */
   async unbanUser(actionId: number) {
     try {
+      // Obtener la acción para saber qué usuario desbanear
+      const action = await this.prisma.moderationAction.findUnique({
+        where: { id: actionId }
+      });
+
+      if (!action) {
+        throw new Error('Acción de moderación no encontrada');
+      }
+
+      // Actualizar usuario a no baneado
+      await this.prisma.user.update({
+        where: { id: action.userId },
+        data: { isBanned: false }
+      });
+
+      // Eliminar registro de moderación
       await this.prisma.moderationAction.delete({
         where: { id: actionId }
       });
 
-      this.logger.log(`Acción de moderación ${actionId} eliminada`);
+      this.logger.log(`Usuario ${action.userId} desbaneado, acción ${actionId} eliminada`);
       return { success: true, message: 'Usuario desbaneado exitosamente' };
     } catch (error) {
       this.logger.error('Error desbaneando usuario:', error);

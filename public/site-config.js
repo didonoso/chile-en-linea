@@ -38,13 +38,12 @@ function applySiteConfig() {
         }
     });
 
-    // Actualizar welcome banner breadcrumbs si existen
-    const welcomeBreadcrumbs = document.querySelectorAll('.breadcrumb a[href="/"], .welcome-text');
-    welcomeBreadcrumbs.forEach(element => {
-        if (siteConfig.siteName && element.textContent.includes('Chile en Línea')) {
-            element.textContent = element.textContent.replace('Chile en Línea', siteConfig.siteName);
-        }
-    });
+    // Actualizar welcome banner - solo el texto, no el HTML con enlaces
+    const welcomeText = document.querySelector('.welcome-text');
+    if (welcomeText && siteConfig.siteName) {
+        // Usar innerHTML para preservar los enlaces
+        welcomeText.innerHTML = welcomeText.innerHTML.replace(/Chile en Línea/g, siteConfig.siteName);
+    }
 
     // Ocultar botón de registro si está deshabilitado
     if (!siteConfig.allowRegistration) {

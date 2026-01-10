@@ -100,6 +100,14 @@ export class AppController {
   }
 
   /**
+   * Renderiza la página de cuenta baneada
+   */
+  @Get('banned.html')
+  getBannedPage(@Res() res: Response) {
+    return res.sendFile(join(__dirname, '..', 'public', 'banned.html'));
+  }
+
+  /**
    * Renderiza la página de gestión de categorías
    */
   @Get('admin/categories')
