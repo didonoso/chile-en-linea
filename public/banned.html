@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cuenta Suspendida - Chile en Línea</title>
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+        .banned-container {
+            max-width: 600px;
+            margin: 100px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .banned-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .banned-title {
+            color: #cc0000;
+            font-size: 24px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .banned-message {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .contact-info {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        .contact-info h3 {
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .contact-info p {
+            color: #666;
+            font-size: 14px;
+            margin: 5px 0;
+        }
+
+        .logout-btn {
+            background: linear-gradient(to bottom, #0066ff 0%, #0052cc 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 20px;
+        }
+
+        .logout-btn:hover {
+            background: linear-gradient(to bottom, #0052cc 0%, #0041a3 100%);
+        }
+    </style>
+</head>
+<body>
+    <div class="banned-container">
+        <div class="banned-icon">🚫</div>
+        <h1 class="banned-title">Cuenta Suspendida</h1>
+        <div class="banned-message">
+            <p>Tu cuenta ha sido suspendida y no puedes acceder al foro en este momento.</p>
+            <p>Esto puede deberse a una violación de nuestras normas de la comunidad.</p>
+        </div>
+
+        <div class="contact-info">
+            <h3>¿Crees que esto es un error?</h3>
+            <p>Si consideras que tu cuenta ha sido suspendida por error, puedes contactar con los administradores del foro.</p>
+            <p><strong>Email:</strong> admin@chileenlinea.cl</p>
+        </div>
+
+        <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+    </div>
+
+    <script src="/auth.js"></script>
+    <script>
+        async function logout() {
+            try {
+                await fetch('/api/auth/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                window.location.href = '/';
+            } catch (error) {
+                console.error('Error al cerrar sesión:', error);
+                window.location.href = '/';
+            }
+        }
+
+        // Si no hay sesión, redirigir al inicio
+        checkAuth().then(user => {
+            if (!user) {
+                window.location.href = '/';
+            }
+        });
+    </script>
+</body>
+</html>
