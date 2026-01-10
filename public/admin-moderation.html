@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moderación - Chile en Línea</title>
+    <link rel="icon" href="/favicon.png" type="image/png">
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+        }
+
+        .mod-container {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .mod-header {
+            background: linear-gradient(to bottom, #0066a8 0%, #005691 100%);
+            color: white;
+            padding: 15px 20px;
+            font-size: 18px;
+            font-weight: 600;
+            border-bottom: 3px solid #004578;
+        }
+
+        .mod-tabs {
+            display: flex;
+            background: #f5f5f5;
+            border-bottom: 2px solid #0066a8;
+        }
+
+        .mod-tab {
+            padding: 15px 30px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.2s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .mod-tab:hover {
+            background: #fff;
+            color: #0066a8;
+        }
+
+        .mod-tab.active {
+            background: #fff;
+            color: #0066a8;
+            border-bottom-color: #0066a8;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 20px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .mod-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .mod-table thead {
+            background: #f5f5f5;
+            border-bottom: 2px solid #0066a8;
+        }
+
+        .mod-table th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .mod-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 14px;
+        }
+
+        .mod-table tbody tr:hover {
+            background: #f9f9f9;
+        }
+
+        .action-form {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s;
+            margin-right: 10px;
+        }
+
+        .btn-ban {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-ban:hover {
+            background: #d32f2f;
+        }
+
+        .btn-warn {
+            background: #ff9800;
+            color: white;
+        }
+
+        .btn-warn:hover {
+            background: #f57c00;
+        }
+
+        .btn-suspend {
+            background: #ff5722;
+            color: white;
+        }
+
+        .btn-suspend:hover {
+            background: #e64a19;
+        }
+
+        .btn-unban {
+            background: #4caf50;
+            color: white;
+        }
+
+        .btn-unban:hover {
+            background: #388e3c;
+        }
+
+        .btn-view {
+            background: #2196f3;
+            color: white;
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .btn-view:hover {
+            background: #1976d2;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .status-banned {
+            background: #f44336;
+        }
+
+        .status-warned {
+            background: #ff9800;
+        }
+
+        .status-suspended {
+            background: #ff5722;
+        }
+
+        .status-active {
+            background: #4caf50;
+        }
+
+        .alert {
+            padding: 12px 20px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .user-search {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .user-search input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="forum-header">
+            <h1>Chile en Línea</h1>
+        </header>
+
+        <div id="welcome-banner" class="welcome-banner">
+            <div class="welcome-left">
+                <span class="welcome-icon">🔨</span>
+                <span id="welcome-text" class="welcome-text">
+                    Panel de Moderación
+                </span>
+            </div>
+            <div class="welcome-right">
+                <a href="/" class="welcome-action">🏠 Inicio</a>
+                <a href="/admin" class="welcome-action">🛠️ Panel Admin</a>
+                <a href="/members" class="welcome-action">👥 Lista de Miembros</a>
+                <button id="logout-btn" class="welcome-action" style="display: none; background: none; border: none; color: #fff; cursor: pointer; font-size: 14px;">🚪 Cerrar Sesión</button>
+            </div>
+        </div>
+
+        <main class="forum-container">
+            <!-- Breadcrumb -->
+            <div class="breadcrumb">
+                <a href="/">Chile en Línea</a> &raquo; <a href="/admin">Panel de Administración</a> &raquo; <span>Moderación</span>
+            </div>
+
+            <!-- Alerta -->
+            <div id="alert" class="alert"></div>
+
+            <!-- Contenedor de Moderación -->
+            <div class="forum-section">
+                <div class="mod-container">
+                    <div class="mod-header">
+                        🔨 Panel de Moderación
+                    </div>
+
+                    <div class="mod-tabs">
+                        <button class="mod-tab active" onclick="switchTab('ban')">🚫 Banear Usuario</button>
+                        <button class="mod-tab" onclick="switchTab('warn')">⚠️ Advertir Usuario</button>
+                        <button class="mod-tab" onclick="switchTab('suspend')">⏸️ Suspender Usuario</button>
+                        <button class="mod-tab" onclick="switchTab('banned')">📋 Usuarios Baneados</button>
+                    </div>
+
+                    <!-- Tab: Banear Usuario -->
+                    <div id="tab-ban" class="tab-content active">
+                        <h3>🚫 Banear Usuario Permanentemente</h3>
+                        <p style="color: #666; margin-bottom: 20px;">El usuario no podrá acceder al foro indefinidamente.</p>
+                        
+                        <div class="action-form">
+                            <form id="ban-form">
+                                <div class="form-group">
+                                    <label for="ban-username">Nombre de Usuario</label>
+                                    <input type="text" id="ban-username" placeholder="Buscar usuario..." required>
+                                    <div id="ban-user-results" style="margin-top: 10px;"></div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="ban-reason">Razón del Baneo</label>
+                                    <textarea id="ban-reason" placeholder="Explica por qué se está baneando a este usuario..." required></textarea>
+                                </div>
+
+                                <button type="submit" class="btn btn-ban">🚫 Banear Usuario</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Tab: Advertir Usuario -->
+                    <div id="tab-warn" class="tab-content">
+                        <h3>⚠️ Enviar Advertencia a Usuario</h3>
+                        <p style="color: #666; margin-bottom: 20px;">El usuario recibirá una advertencia formal que quedará registrada.</p>
+                        
+                        <div class="action-form">
+                            <form id="warn-form">
+                                <div class="form-group">
+                                    <label for="warn-username">Nombre de Usuario</label>
+                                    <input type="text" id="warn-username" placeholder="Buscar usuario..." required>
+                                    <div id="warn-user-results" style="margin-top: 10px;"></div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="warn-reason">Razón de la Advertencia</label>
+                                    <textarea id="warn-reason" placeholder="Explica qué normas violó el usuario..." required></textarea>
+                                </div>
+
+                                <button type="submit" class="btn btn-warn">⚠️ Enviar Advertencia</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Tab: Suspender Usuario -->
+                    <div id="tab-suspend" class="tab-content">
+                        <h3>⏸️ Suspender Usuario Temporalmente</h3>
+                        <p style="color: #666; margin-bottom: 20px;">El usuario no podrá acceder al foro durante el período especificado.</p>
+                        
+                        <div class="action-form">
+                            <form id="suspend-form">
+                                <div class="form-group">
+                                    <label for="suspend-username">Nombre de Usuario</label>
+                                    <input type="text" id="suspend-username" placeholder="Buscar usuario..." required>
+                                    <div id="suspend-user-results" style="margin-top: 10px;"></div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="suspend-duration">Duración de la Suspensión</label>
+                                    <select id="suspend-duration" required>
+                                        <option value="">Seleccionar duración...</option>
+                                        <option value="1">1 día</option>
+                                        <option value="3">3 días</option>
+                                        <option value="7">7 días</option>
+                                        <option value="14">14 días</option>
+                                        <option value="30">30 días</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="suspend-reason">Razón de la Suspensión</label>
+                                    <textarea id="suspend-reason" placeholder="Explica por qué se está suspendiendo a este usuario..." required></textarea>
+                                </div>
+
+                                <button type="submit" class="btn btn-suspend">⏸️ Suspender Usuario</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Tab: Usuarios Baneados -->
+                    <div id="tab-banned" class="tab-content">
+                        <h3>📋 Usuarios Baneados y Suspendidos</h3>
+                        
+                        <table class="mod-table">
+                            <thead>
+                                <tr>
+                                    <th>Usuario</th>
+                                    <th>Estado</th>
+                                    <th>Razón</th>
+                                    <th>Fecha</th>
+                                    <th>Moderador</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="banned-users-tbody">
+                                <tr>
+                                    <td colspan="6">
+                                        <div class="empty-state">
+                                            <div class="empty-state-icon">✅</div>
+                                            <div>No hay usuarios baneados o suspendidos</div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/auth.js"></script>
+    <script>
+        let selectedUserId = null;
+        let bannedUsers = [];
+
+        // Verificar acceso de administrador/moderador
+        async function checkModAccess() {
+            try {
+                const response = await fetch('/api/auth/me', {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    window.location.href = '/admin';
+                    return false;
+                }
+
+                const user = await response.json();
+                // Permitir admins (4) y moderadores (3)
+                if (user.userGroupId !== 4 && user.userGroupId !== 3) {
+                    window.location.href = '/admin';
+                    return false;
+                }
+                
+                return true;
+            } catch {
+                window.location.href = '/admin';
+                return false;
+            }
+        }
+
+        // Cambiar de tab
+        function switchTab(tab) {
+            // Ocultar todos los tabs
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.querySelectorAll('.mod-tab').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Mostrar tab seleccionado
+            document.getElementById(`tab-${tab}`).classList.add('active');
+            event.target.classList.add('active');
+
+            // Cargar datos si es necesario
+            if (tab === 'banned') {
+                loadBannedUsers();
+            }
+        }
+
+        // Buscar usuarios mientras se escribe
+        let searchTimeout;
+        function setupUserSearch(inputId, resultsId) {
+            const input = document.getElementById(inputId);
+            const results = document.getElementById(resultsId);
+
+            input.addEventListener('input', async (e) => {
+                clearTimeout(searchTimeout);
+                const query = e.target.value.trim();
+
+                if (query.length < 2) {
+                    results.innerHTML = '';
+                    return;
+                }
+
+                searchTimeout = setTimeout(async () => {
+                    try {
+                        const response = await fetch(`/api/users/search?q=${encodeURIComponent(query)}`, {
+                            credentials: 'include'
+                        });
+
+                        if (response.ok) {
+                            const users = await response.json();
+                            
+                            if (users.length === 0) {
+                                results.innerHTML = '<div style="color: #999; padding: 10px;">No se encontraron usuarios</div>';
+                                return;
+                            }
+
+                            results.innerHTML = users.slice(0, 5).map(user => `
+                                <div style="padding: 10px; background: #fff; border: 1px solid #ddd; margin-bottom: 5px; cursor: pointer; border-radius: 4px;" 
+                                     onclick="selectUser(${user.id}, '${user.username}', '${inputId}', '${resultsId}')">
+                                    <strong>${user.username}</strong> - ${user.email}
+                                </div>
+                            `).join('');
+                        }
+                    } catch (error) {
+                        console.error('Error buscando usuarios:', error);
+                    }
+                }, 300);
+            });
+        }
+
+        function selectUser(id, username, inputId, resultsId) {
+            selectedUserId = id;
+            document.getElementById(inputId).value = username;
+            document.getElementById(resultsId).innerHTML = '';
+        }
+
+        // Formulario de baneo
+        document.getElementById('ban-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (!selectedUserId) {
+                showAlert('error', 'Por favor selecciona un usuario de la búsqueda');
+                return;
+            }
+
+            const reason = document.getElementById('ban-reason').value;
+
+            try {
+                const response = await fetch('/api/moderation/ban', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        userId: selectedUserId,
+                        reason
+                    })
+                });
+
+                if (response.ok) {
+                    showAlert('success', '✅ Usuario baneado exitosamente');
+                    document.getElementById('ban-form').reset();
+                    document.getElementById('ban-user-results').innerHTML = '';
+                    selectedUserId = null;
+                } else {
+                    const error = await response.json();
+                    showAlert('error', '❌ Error: ' + (error.message || 'No se pudo banear el usuario'));
+                }
+            } catch (error) {
+                console.error('Error baneando usuario:', error);
+                showAlert('error', '❌ Error al banear el usuario');
+            }
+        });
+
+        // Formulario de advertencia
+        document.getElementById('warn-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (!selectedUserId) {
+                showAlert('error', 'Por favor selecciona un usuario de la búsqueda');
+                return;
+            }
+
+            const reason = document.getElementById('warn-reason').value;
+
+            try {
+                const response = await fetch('/api/moderation/warn', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        userId: selectedUserId,
+                        reason
+                    })
+                });
+
+                if (response.ok) {
+                    showAlert('success', '✅ Advertencia enviada exitosamente');
+                    document.getElementById('warn-form').reset();
+                    document.getElementById('warn-user-results').innerHTML = '';
+                    selectedUserId = null;
+                } else {
+                    const error = await response.json();
+                    showAlert('error', '❌ Error: ' + (error.message || 'No se pudo enviar la advertencia'));
+                }
+            } catch (error) {
+                console.error('Error enviando advertencia:', error);
+                showAlert('error', '❌ Error al enviar la advertencia');
+            }
+        });
+
+        // Formulario de suspensión
+        document.getElementById('suspend-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (!selectedUserId) {
+                showAlert('error', 'Por favor selecciona un usuario de la búsqueda');
+                return;
+            }
+
+            const duration = parseInt(document.getElementById('suspend-duration').value);
+            const reason = document.getElementById('suspend-reason').value;
+
+            try {
+                const response = await fetch('/api/moderation/suspend', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        userId: selectedUserId,
+                        days: duration,
+                        reason
+                    })
+                });
+
+                if (response.ok) {
+                    showAlert('success', `✅ Usuario suspendido por ${duration} días`);
+                    document.getElementById('suspend-form').reset();
+                    document.getElementById('suspend-user-results').innerHTML = '';
+                    selectedUserId = null;
+                } else {
+                    const error = await response.json();
+                    showAlert('error', '❌ Error: ' + (error.message || 'No se pudo suspender el usuario'));
+                }
+            } catch (error) {
+                console.error('Error suspendiendo usuario:', error);
+                showAlert('error', '❌ Error al suspender el usuario');
+            }
+        });
+
+        // Cargar usuarios baneados
+        async function loadBannedUsers() {
+            try {
+                const response = await fetch('/api/moderation/banned', {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    bannedUsers = await response.json();
+                    renderBannedUsers();
+                }
+            } catch (error) {
+                console.error('Error cargando usuarios baneados:', error);
+            }
+        }
+
+        function renderBannedUsers() {
+            const tbody = document.getElementById('banned-users-tbody');
+
+            if (bannedUsers.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">✅</div>
+                                <div>No hay usuarios baneados o suspendidos</div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = bannedUsers.map(ban => `
+                <tr>
+                    <td><strong>${ban.user.username}</strong></td>
+                    <td>
+                        <span class="status-badge ${ban.type === 'ban' ? 'status-banned' : 'status-suspended'}">
+                            ${ban.type === 'ban' ? '🚫 Baneado' : '⏸️ Suspendido'}
+                        </span>
+                    </td>
+                    <td>${ban.reason || 'Sin razón especificada'}</td>
+                    <td>${new Date(ban.createdAt).toLocaleDateString('es-CL')}</td>
+                    <td>${ban.moderator?.username || 'Sistema'}</td>
+                    <td>
+                        <a href="/user/${ban.user.username}" class="btn btn-view">👁️ Ver</a>
+                        <button class="btn btn-unban" onclick="unbanUser(${ban.id}, '${ban.user.username}')">
+                            🔓 Desbanear
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Desbanear usuario
+        async function unbanUser(banId, username) {
+            if (!confirm(`¿Estás seguro de que deseas desbanear a "${username}"?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/moderation/unban/${banId}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    showAlert('success', '✅ Usuario desbaneado exitosamente');
+                    loadBannedUsers();
+                } else {
+                    const error = await response.json();
+                    showAlert('error', '❌ Error: ' + (error.message || 'No se pudo desbanear el usuario'));
+                }
+            } catch (error) {
+                console.error('Error desbaneando usuario:', error);
+                showAlert('error', '❌ Error al desbanear el usuario');
+            }
+        }
+
+        function showAlert(type, message) {
+            const alert = document.getElementById('alert');
+            alert.className = `alert alert-${type} show`;
+            alert.textContent = message;
+            window.scrollTo(0, 0);
+            setTimeout(() => alert.classList.remove('show'), 5000);
+        }
+
+        // Inicializar
+        checkModAccess().then(hasAccess => {
+            if (hasAccess) {
+                setupUserSearch('ban-username', 'ban-user-results');
+                setupUserSearch('warn-username', 'warn-user-results');
+                setupUserSearch('suspend-username', 'suspend-user-results');
+            }
+        });
+    </script>
+    <script src="/site-config.js"></script>
+</body>
+</html>

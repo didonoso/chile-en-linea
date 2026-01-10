@@ -139,7 +139,7 @@
                                         Crear, editar o eliminar categorías del foro.
                                     </div>
                                 </a>
-                                <a href="#" class="admin-option" onclick="alert('Próximamente'); return false;">
+                                <a href="/admin/settings" class="admin-option">
                                     <div class="admin-option-title">⚙️ Configuración</div>
                                     <div class="admin-option-description">
                                         Ajustes generales del foro y personalización.
@@ -152,13 +152,13 @@
                         <div class="admin-section">
                             <div class="admin-section-title">👤 Gestión de Usuarios</div>
                             <div class="admin-options">
-                                <a href="/members" class="admin-option">
+                                <a href="/admin/users" class="admin-option">
                                     <div class="admin-option-title">👥 Ver Usuarios</div>
                                     <div class="admin-option-description">
                                         Lista completa de usuarios registrados.
                                     </div>
                                 </a>
-                                <a href="#" class="admin-option" onclick="alert('Próximamente'); return false;">
+                                <a href="/admin/moderation" class="admin-option">
                                     <div class="admin-option-title">🔨 Moderación</div>
                                     <div class="admin-option-description">
                                         Banear, advertir o suspender usuarios.
@@ -274,5 +274,6 @@
         // Verificar acceso al cargar la página
         checkAdminAccess();
     </script>
+    <script src="/site-config.js"></script>
 </body>
 </html>

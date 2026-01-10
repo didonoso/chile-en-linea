@@ -126,7 +126,13 @@ export class AppService {
           totalMembers: totalMembers,
           newestMember: newestMember?.username || 'N/A',
           mostOnline: 15,
-          mostOnlineDate: '05-01-2026, 02:27 PM'
+          mostOnlineDate: new Date().toLocaleDateString('es-CL', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+          })
         }
       };
     } catch (error) {
@@ -948,6 +954,461 @@ export class AppService {
       return { success: true, message: 'Reputación eliminada correctamente' };
     } catch (error) {
       this.logger.error(`Error eliminando reputación`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene la configuración del foro
+   */
+  async getSettings() {
+    try {
+      // Obtener todas las configuraciones de la base de datos
+      const settings = await this.prisma.setting.findMany();
+      
+      // Si no hay configuraciones, crear las por defecto
+      if (settings.length === 0) {
+        await this.initializeDefaultSettings();
+        return await this.getSettings(); // Llamada recursiva para obtener los valores inicializados
+      }
+      
+      // Convertir array de settings a objeto
+      const settingsObject = {};
+      settings.forEach(setting => {
+        settingsObject[setting.key] = this.parseSettingValue(setting.value, setting.type);
+      });
+      
+      return settingsObject;
+    } catch (error) {
+      this.logger.error('Error obteniendo configuración:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene solo la configuración pública del foro
+   */
+  async getPublicSettings() {
+    try {
+      const allSettings = await this.getSettings();
+      
+      // Solo retornar configuraciones que son públicas
+      return {
+        siteName: allSettings['siteName'],
+        siteDescription: allSettings['siteDescription'],
+        siteUrl: allSettings['siteUrl'],
+        allowRegistration: allSettings['allowRegistration'],
+        allowGuests: allSettings['allowGuests'],
+        maintenanceMode: allSettings['maintenanceMode'],
+        maintenanceMessage: allSettings['maintenanceMessage']
+      };
+    } catch (error) {
+      this.logger.error('Error obteniendo configuración pública:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Actualiza la configuración del foro
+   */
+  async updateSettings(settings: any) {
+    try {
+      // Actualizar cada configuración en la base de datos
+      const updatePromises = Object.keys(settings).map(async key => {
+        const value = settings[key];
+        const type = typeof value === 'boolean' ? 'boolean' : 
+                     typeof value === 'number' ? 'number' : 'string';
+        
+        // Buscar si existe
+        const existing = await this.prisma.setting.findUnique({
+          where: { key }
+        });
+
+        if (existing) {
+          // Actualizar
+          return this.prisma.setting.update({
+            where: { key },
+            data: {
+              value: String(value),
+              type
+            }
+          });
+        } else {
+          // Crear
+          return this.prisma.setting.create({
+            data: {
+              key,
+              value: String(value),
+              type
+            }
+          });
+        }
+      });
+      
+      await Promise.all(updatePromises);
+      
+      this.logger.log('Configuración actualizada exitosamente');
+      return { 
+        success: true, 
+        message: 'Configuración actualizada exitosamente', 
+        settings 
+      };
+    } catch (error) {
+      this.logger.error('Error actualizando configuración:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Inicializa la configuración por defecto en la base de datos
+   * @private
+   */
+  private async initializeDefaultSettings() {
+    const defaultSettings = [
+      { key: 'siteName', value: 'Chile en Línea', type: 'string' },
+      { key: 'siteDescription', value: 'Foro comunitario de Chile', type: 'string' },
+      { key: 'siteUrl', value: 'http://localhost:3000', type: 'string' },
+      { key: 'postsPerPage', value: '20', type: 'number' },
+      { key: 'threadsPerPage', value: '25', type: 'number' },
+      { key: 'allowGuests', value: 'true', type: 'boolean' },
+      { key: 'allowGuestComments', value: 'false', type: 'boolean' },
+      { key: 'allowRegistration', value: 'true', type: 'boolean' },
+      { key: 'requireEmailVerification', value: 'false', type: 'boolean' },
+      { key: 'defaultUserGroup', value: '2', type: 'number' },
+      { key: 'minPasswordLength', value: '8', type: 'number' },
+      { key: 'moderateNewThreads', value: 'false', type: 'boolean' },
+      { key: 'moderateNewComments', value: 'false', type: 'boolean' },
+      { key: 'maxEditTime', value: '60', type: 'number' },
+      { key: 'maxAvatarSize', value: '5', type: 'number' },
+      { key: 'avatarDimensions', value: '200', type: 'number' },
+      { key: 'allowAvatars', value: 'true', type: 'boolean' },
+      { key: 'maintenanceMode', value: 'false', type: 'boolean' },
+      { key: 'maintenanceMessage', value: 'El foro está en mantenimiento. Volveremos pronto.', type: 'string' }
+    ];
+
+    // Insertar cada configuración individualmente
+    for (const setting of defaultSettings) {
+      const existing = await this.prisma.setting.findUnique({
+        where: { key: setting.key }
+      });
+
+      if (!existing) {
+        await this.prisma.setting.create({
+          data: setting
+        });
+      }
+    }
+
+    this.logger.log('Configuración por defecto inicializada');
+  }
+
+  /**
+   * Parsea el valor de un setting según su tipo
+   * @private
+   */
+  private parseSettingValue(value: string, type: string): any {
+    switch (type) {
+      case 'boolean':
+        return value === 'true';
+      case 'number':
+        return parseInt(value);
+      case 'json':
+        return JSON.parse(value);
+      default:
+        return value;
+    }
+  }
+
+  /**
+   * Obtiene todos los usuarios con información completa (para administradores)
+   */
+  async getAllUsersAdmin() {
+    try {
+      return await this.prisma.user.findMany({
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          avatar: true,
+          userGroupId: true,
+          createdAt: true,
+          lastLoginAt: true,
+          userGroup: {
+            select: {
+              id: true,
+              name: true,
+              color: true
+            }
+          },
+          _count: {
+            select: {
+              posts: true,
+              comments: true
+            }
+          }
+        },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      });
+    } catch (error) {
+      this.logger.error('Error obteniendo usuarios:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Actualiza un usuario
+   */
+  async updateUser(id: number, data: { username?: string; email?: string; userGroupId?: number }) {
+    try {
+      // Verificar si el username o email ya existen (si se están cambiando)
+      if (data.username) {
+        const existingUsername = await this.prisma.user.findFirst({
+          where: {
+            username: data.username,
+            NOT: { id }
+          }
+        });
+        if (existingUsername) {
+          throw new Error('El nombre de usuario ya está en uso');
+        }
+      }
+
+      if (data.email) {
+        const existingEmail = await this.prisma.user.findFirst({
+          where: {
+            email: data.email,
+            NOT: { id }
+          }
+        });
+        if (existingEmail) {
+          throw new Error('El email ya está en uso');
+        }
+      }
+
+      const updatedUser = await this.prisma.user.update({
+        where: { id },
+        data: {
+          ...(data.username && { username: data.username }),
+          ...(data.email && { email: data.email }),
+          ...(data.userGroupId && { userGroupId: data.userGroupId })
+        },
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          userGroupId: true
+        }
+      });
+
+      this.logger.log(`Usuario ${id} actualizado exitosamente`);
+      return { success: true, message: 'Usuario actualizado exitosamente', user: updatedUser };
+    } catch (error) {
+      this.logger.error('Error actualizando usuario:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Elimina un usuario y todo su contenido
+   */
+  async deleteUser(id: number) {
+    try {
+      // Verificar que el usuario existe
+      const user = await this.prisma.user.findUnique({
+        where: { id }
+      });
+
+      if (!user) {
+        throw new Error('Usuario no encontrado');
+      }
+
+      // Eliminar usuario (Prisma se encarga de las relaciones en cascada)
+      await this.prisma.user.delete({
+        where: { id }
+      });
+
+      this.logger.log(`Usuario ${id} (${user.username}) eliminado exitosamente`);
+      return { success: true, message: 'Usuario eliminado exitosamente' };
+    } catch (error) {
+      this.logger.error('Error eliminando usuario:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Buscar usuarios por nombre o email
+   */
+  async searchUsers(query: string) {
+    try {
+      return await this.prisma.user.findMany({
+        where: {
+          OR: [
+            { username: { contains: query, mode: 'insensitive' } },
+            { email: { contains: query, mode: 'insensitive' } }
+          ]
+        },
+        select: {
+          id: true,
+          username: true,
+          email: true
+        },
+        take: 10
+      });
+    } catch (error) {
+      this.logger.error('Error buscando usuarios:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Banear un usuario permanentemente
+   */
+  async banUser(moderatorId: number, userId: number, reason: string) {
+    try {
+      // Actualizar usuario a baneado
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: { isBanned: true }
+      });
+
+      // Crear registro de moderación
+      const action = await this.prisma.moderationAction.create({
+        data: {
+          type: 'ban',
+          reason,
+          userId,
+          moderatorId
+        }
+      });
+
+      this.logger.log(`Usuario ${userId} baneado por moderador ${moderatorId}`);
+      return { success: true, message: 'Usuario baneado exitosamente', action };
+    } catch (error) {
+      this.logger.error('Error baneando usuario:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Enviar advertencia a un usuario
+   */
+  async warnUser(moderatorId: number, userId: number, reason: string) {
+    try {
+      const action = await this.prisma.moderationAction.create({
+        data: {
+          type: 'warn',
+          reason,
+          userId,
+          moderatorId
+        }
+      });
+
+      this.logger.log(`Usuario ${userId} advertido por moderador ${moderatorId}`);
+      return { success: true, message: 'Advertencia enviada exitosamente', action };
+    } catch (error) {
+      this.logger.error('Error enviando advertencia:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Suspender un usuario temporalmente
+   */
+  async suspendUser(moderatorId: number, userId: number, days: number, reason: string) {
+    try {
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + days);
+
+      // Actualizar usuario a baneado
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: { isBanned: true }
+      });
+
+      // Crear registro de suspensión
+      const action = await this.prisma.moderationAction.create({
+        data: {
+          type: 'suspend',
+          reason,
+          expiresAt,
+          userId,
+          moderatorId
+        }
+      });
+
+      this.logger.log(`Usuario ${userId} suspendido por ${days} días por moderador ${moderatorId}`);
+      return { success: true, message: `Usuario suspendido por ${days} días`, action };
+    } catch (error) {
+      this.logger.error('Error suspendiendo usuario:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtener usuarios baneados y suspendidos
+   */
+  async getBannedUsers() {
+    try {
+      return await this.prisma.moderationAction.findMany({
+        where: {
+          type: { in: ['ban', 'suspend'] }
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              username: true,
+              email: true
+            }
+          },
+          moderator: {
+            select: {
+              id: true,
+              username: true
+            }
+          }
+        },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      });
+    } catch (error) {
+      this.logger.error('Error obteniendo usuarios baneados:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Desbanear usuario
+   */
+  async unbanUser(actionId: number) {
+    try {
+      // Obtener la acción para saber qué usuario desbanear
+      const action = await this.prisma.moderationAction.findUnique({
+        where: { id: actionId }
+      });
+
+      if (!action) {
+        throw new Error('Acción de moderación no encontrada');
+      }
+
+      // Actualizar usuario a no baneado
+      await this.prisma.user.update({
+        where: { id: action.userId },
+        data: { isBanned: false }
+      });
+
+      // Eliminar registro de moderación
+      await this.prisma.moderationAction.delete({
+        where: { id: actionId }
+      });
+
+      this.logger.log(`Usuario ${action.userId} desbaneado, acción ${actionId} eliminada`);
+      return { success: true, message: 'Usuario desbaneado exitosamente' };
+    } catch (error) {
+      this.logger.error('Error desbaneando usuario:', error);
       throw error;
     }
   }

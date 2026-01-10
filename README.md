@@ -48,6 +48,26 @@ Aplicación de foro web moderna construida con NestJS, Prisma y PostgreSQL, con 
 - 🕒 Última visita y fecha de registro
 - 📜 Threads recientes del usuario
 
+### Panel de Administración
+- 🛠️ Dashboard completo estilo MyBB (/admin)
+- 📁 Gestión de Categorías (CRUD completo con auto-slug)
+- ⚙️ Configuración del Foro (persistente en BD)
+- 👥 Gestión de Usuarios (ver, editar, eliminar)
+- 🔨 Sistema de Moderación (baneos permanentes, suspensiones temporales, advertencias)
+- 🚫 **Control de Baneos**: Campo `isBanned` en usuarios, no se eliminan cuentas
+- 🛡️ **Protección automática**: Usuarios baneados bloqueados en JWT Guard
+- 📄 **Página de baneo**: Información clara para usuarios suspendidos
+- 🎨 Configuración dinámica (nombre del sitio, modo mantenimiento, etc.)
+- 🔐 Control de acceso por userGroupId (admins: 4, mods: 3)
+
+### Sistema de Configuración
+- ⚙️ 19 configuraciones personalizables
+- 💾 Persistencia en base de datos (tabla Setting)
+- 🔄 Carga dinámica en todas las páginas (site-config.js)
+- 🎨 Personalización del nombre del sitio en tiempo real
+- 🔧 Modo mantenimiento con overlay para no-admins
+- 📝 Control de registro, moderación, avatares, etc.
+
 ## 🛠️ Tecnologías
 
 ### Backend
@@ -135,30 +155,37 @@ npm run start:prod
 ```
 chile-en-linea/
 ├── src/
-│   ├── auth/              # Módulo de autenticación (JWT, Passport)
-│   ├── app.controller.ts  # Controladores principales
-│   ├── app.service.ts     # Lógica de negocio
-│   ├── avatar.service.ts  # Servicio de gestión de avatares
-│   ├── prisma.service.ts  # Cliente Prisma
-│   └── main.ts            # Entry point
+│   ├── auth/                    # Módulo de autenticación (JWT, Passport)
+│   ├── app.controller.ts        # Controladores principales
+│   ├── app.service.ts           # Lógica de negocio
+│   ├── avatar.service.ts        # Servicio de gestión de avatares
+│   ├── prisma.service.ts        # Cliente Prisma
+│   └── main.ts                  # Entry point
 ├── prisma/
-│   ├── schema.prisma      # Esquema de base de datos
-│   └── migrations/        # Migraciones
+│   ├── schema.prisma            # Esquema de base de datos
+│   └── migrations/              # Migraciones
 ├── public/
-│   ├── index.html         # Página principal
-│   ├── category.html      # Listado de threads
-│   ├── thread.html        # Vista de thread
-│   ├── new-thread.html    # Crear thread
-│   ├── members.html       # Lista de miembros
-│   ├── profile.html       # Perfil de usuario
-│   ├── groups.html        # Gestión de grupos
-│   ├── reputation.html    # Reporte de reputación
-│   ├── login.html         # Login
-│   ├── register.html      # Registro
-│   ├── styles.css         # Estilos globales
-│   ├── auth.js            # Gestión de autenticación frontend
+│   ├── index.html               # Página principal
+│   ├── category.html            # Listado de threads
+│   ├── thread.html              # Vista de thread
+│   ├── new-thread.html          # Crear thread
+│   ├── members.html             # Lista de miembros
+│   ├── profile.html             # Perfil de usuario
+│   ├── groups.html              # Listado de grupos
+│   ├── group.html               # Detalle de grupo
+│   ├── reputation.html          # Reporte de reputación
+│   ├── login.html               # Login
+│   ├── register.html            # Registro
+│   ├── admin.html               # Panel de administración
+│   ├── admin-categories.html    # Gestión de categorías
+│   ├── admin-settings.html      # Configuración del foro
+│   ├── admin-users.html         # Gestión de usuarios
+│   ├── admin-moderation.html    # Panel de moderación
+│   ├── styles.css               # Estilos globales
+│   ├── auth.js                  # Gestión de autenticación frontend
+│   ├── site-config.js           # Configuración dinámica del sitio
 │   └── uploads/
-│       └── avatars/       # Avatares de usuarios
+│       └── avatars/             # Avatares de usuarios
 └── README.md
 ```
 
@@ -167,8 +194,10 @@ chile-en-linea/
 ### User
 - Información básica (email, username, password hasheado)
 - Avatar (path relativo)
+- **isBanned** (Boolean): Estado de baneo del usuario
 - Relación con UserGroup
 - Timestamps (createdAt, lastLoginAt)
+- **Nota**: Las cuentas no se eliminan realmente, solo se marcan como baneadas
 
 ### UserGroup
 - 7 grupos predefinidos con colores
@@ -186,6 +215,16 @@ chile-en-linea/
 - Relación con Post y User (autor)
 
 ### Reputation
+
+### Setting
+- Configuraciones del foro (key-value)
+- Tipos: string, number, boolean, json
+- 19 configuraciones predefinidas
+
+### ModerationAction
+- Acciones de moderación (ban, suspend, warn)
+- Razón y fecha de expiración (suspensiones)
+- Relaciones con usuario moderado y moderador
 - Sistema +1/0/-1 (positive/neutral/negative)
 - Comentario opcional
 - Relación bidireccional con User (from/to)
@@ -198,9 +237,29 @@ chile-en-linea/
 
 | ID | Grupo | Color | Descripción |
 |----|-------|-------|-------------|
-| 1 | Invitados | #000000 | Usuarios no registrados |
-| 2 | Registrados | #0066CC | Usuarios normales (default) |
-| 3 | Super Moderadores | #CC0000 | Moderación avanzada |
+| 1 | Invitados | #000000 | Usu
+  - Acceso completo al panel de administración
+  - Gestión de categorías (crear, editar, eliminar)
+  - Gestión de usuarios (editar, eliminar, cambiar grupo)
+  - Modificación de configuración del foro
+  - Todas las acciones de moderación
+  - Desbanear uavanzada de threads y usuarios
+- [ ] Sistema de notificaciones en tiempo real
+- [ ] Mensajes privados entre usuarios
+- [ ] Editor WYSIWYG mejorado (TinyMCE/CKEditor)
+- [ ] Sistema de reportes de contenido
+- [ ] Moderación inline de posts y comentarios
+- [ ] Tema oscuro/claro (dark mode toggle)
+- [ ] WebSockets para actualizaciones en vivo
+- [ ] Sistema de badges y logros
+- [ ] Panel de analytics para administradores
+- [ ] Email verification y recuperación de contraseña
+- [ ] Paginación en threads largos
+- [ ] Sistema de encuestas/polls
+- [ ] Firma de usuario personalizable
+  
+- **Propios recursos**: 
+  - | #CC0000 | Moderación avanzada |
 | 4 | Administradores | #FF0000 | Control total del foro |
 | 5 | Esperando Activación | #999999 | Pendientes de verificación |
 | 6 | Moderadores | #009900 | Moderación básica |
@@ -281,12 +340,59 @@ Las contribuciones son bienvenidas. Por favor abre un issue primero para discuti
 - `GET /api/groups/:id/users` - Usuarios de un grupo específico
 - `PUT /api/users/:userId/group` - Cambiar grupo de usuario 🔒
   - Body: `{ newGroupId: number }`
-  - Solo administradores (userGroupId: 4)
+### ⚙️ Configuración del Foro
+- `GET /api/settings` - Obtener todas las configuraciones 🔒👑
+  - Solo administradores
+- `GET /api/settings/public` - Configuraciones públicas
+  - siteName, siteDescription, allowRegistration, maintenanceMode, etc.
+- `PUT /api/settings` - Actualizar configuración 🔒👑
+  - Body: `{ key1: value1, key2: value2, ... }`
+  - Solo administradores
 
-### 🖼️ Avatares
-- `POST /api/users/:userId/avatar` - Subir avatar 🔒
-  - Form-data: `avatar` (imagen, max 5MB)
-  - Auto-resize a 200x200px
+### 📁 Gestión de Categorías
+- `POST /api/categories` - Crear categoría 🔒👑
+  - Body: `{ name: string, slug: string, description?: string }`
+  - Solo administradores
+- `PUT /api/categories/:id` - Actualizar categoría 🔒👑
+  - Body: `{ name: string, slug: string, description?: string }`
+  - Solo administradores
+- `DELETE /api/categories/:id` - Eliminar categoría 🔒👑
+  - Elimina posts asociados en cascada
+  - Solo administradores
+
+### 👥 Gestión de Usuarios (Admin)
+- `GET /api/admin/users` - Lista completa de usuarios 🔒👑
+  - Incluye grupo, posts, email, fechas
+  - Solo administradores
+- `PUT /api/admin/users/:id` - Actualizar usuario 🔒👑
+  - Body: `{ username?: string, email?: string, userGroupId?: number }`
+  - Solo administradores
+- `DELETE /api/admin/users/:id` - Eliminar usuario 🔒👑
+  - Elimina todo su contenido en cascada
+  - Solo administradores
+
+### 🔨 Sistema de Moderación
+- `GET /api/users/search` - Buscar usuarios 🔒🛡️
+  - Query: `?q=nombre`
+  - Admins y moderadores
+- `POST /api/moderation/ban` - Banear usuario 🔒🛡️
+  - Body: `{ userId: number, reason: string }`
+  - Permanente, actualiza `isBanned = true`
+  - Bloquea acceso al foro automáticamente
+- `POST /api/moderation/warn` - Advertir usuario 🔒🛡️
+  - Body: `{ userId: number, reason: string }`
+- `POST /api/moderation/suspend` - Suspender usuario 🔒🛡️
+  - Body: `{ userId: number, days: number, reason: string }`
+  - Temporal, actualiza `isBanned = true`
+  - Bloquea acceso hasta expiración
+- `GET /api/moderation/banned` - Lista de baneados/suspendidos 🔒🛡️
+- `DELETE /api/moderation/unban/:id` - Desbanear usuario 🔒👑
+  - Actualiza `isBanned = false`
+  - Solo administradores
+
+🔒 = Requiere autenticación JWT  
+👑 = Solo administradores (userGroupId: 4)  
+🛡️ = Administradores y moderadores (userGroupId: 3 o 4)
   - Solo usuario propio
 - `DELETE /api/users/:userId/avatar` - Eliminar avatar 🔒
   - Solo usuario propio

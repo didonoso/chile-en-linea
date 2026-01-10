@@ -100,11 +100,43 @@ export class AppController {
   }
 
   /**
+   * Renderiza la página de cuenta baneada
+   */
+  @Get('banned.html')
+  getBannedPage(@Res() res: Response) {
+    return res.sendFile(join(__dirname, '..', 'public', 'banned.html'));
+  }
+
+  /**
    * Renderiza la página de gestión de categorías
    */
   @Get('admin/categories')
   getAdminCategories(@Res() res: Response) {
     return res.sendFile(join(__dirname, '..', 'public', 'admin-categories.html'));
+  }
+
+  /**
+   * Renderiza la página de configuración
+   */
+  @Get('admin/settings')
+  getAdminSettings(@Res() res: Response) {
+    return res.sendFile(join(__dirname, '..', 'public', 'admin-settings.html'));
+  }
+
+  /**
+   * Renderiza la página de gestión de usuarios
+   */
+  @Get('admin/users')
+  getAdminUsers(@Res() res: Response) {
+    return res.sendFile(join(__dirname, '..', 'public', 'admin-users.html'));
+  }
+
+  /**
+   * Renderiza la página de moderación
+   */
+  @Get('admin/moderation')
+  getAdminModeration(@Res() res: Response) {
+    return res.sendFile(join(__dirname, '..', 'public', 'admin-moderation.html'));
   }
 
   /**
@@ -182,6 +214,150 @@ export class AppController {
       throw new HttpException('No tienes permisos para eliminar categorías', HttpStatus.FORBIDDEN);
     }
     return this.appService.deleteCategory(id);
+  }
+
+  /**
+   * Obtiene la configuración del foro (solo administradores)
+   */
+  @Get('api/settings')
+  @UseGuards(JwtAuthGuard)
+  async getSettings(@Request() req) {
+    if (req.user.userGroupId !== 4) {
+      throw new HttpException('No tienes permisos para ver la configuración', HttpStatus.FORBIDDEN);
+    }
+    return this.appService.getSettings();
+  }
+
+  /**
+   * Obtiene la configuración pública del foro (sin autenticación)
+   */
+  @Get('api/settings/public')
+  async getPublicSettings() {
+    return this.appService.getPublicSettings();
+  }
+
+  /**
+   * Actualiza la configuración del foro (solo administradores)
+   */
+  @Put('api/settings')
+  @UseGuards(JwtAuthGuard)
+  async updateSettings(@Request() req, @Body() settings: any) {
+    if (req.user.userGroupId !== 4) {
+      throw new HttpException('No tienes permisos para modificar la configuración', HttpStatus.FORBIDDEN);
+    }
+    return this.appService.updateSettings(settings);
+  }
+
+  /**
+   * Obtiene todos los usuarios (solo administradores)
+   */
+  @Get('api/admin/users')
+  @UseGuards(JwtAuthGuard)
+  async getAllUsers(@Request() req) {
+    if (req.user.userGroupId !== 4) {
+      throw new HttpException('No tienes permisos para ver usuarios', HttpStatus.FORBIDDEN);
+    }
+    return this.appService.getAllUsersAdmin();
+  }
+
+  /**
+   * Actualiza un usuario (solo administradores)
+   */
+  @Put('api/admin/users/:id')
+  @UseGuards(JwtAuthGuard)
+  async updateUser(
+    @Request() req,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() data: { username?: string; email?: string; userGroupId?: number }
+  ) {
+    if (req.user.userGroupId !== 4) {
+      throw new HttpException('No tienes permisos para editar usuarios', HttpStatus.FORBIDDEN);
+    }
+    return this.appService.updateUser(id, data);
+  }
+
+  /**
+   * Elimina un usuario (solo administradores)
+   */
+  @Delete('api/admin/users/:id')
+  @UseGuards(JwtAuthGuard)
+  async deleteUserAdmin(@Request() req, @Param('id', ParseIntPipe) id: number) {
+    if (req.user.userGroupId !== 4) {
+      throw new HttpException('No tienes permisos para eliminar usuarios', HttpStatus.FORBIDDEN);
+    }
+    return this.appService.deleteUser(id);
+  }
+
+  /**
+   * Buscar usuarios por nombre o email
+   */
+  @Get('api/users/search')
+  @UseGuards(JwtAuthGuard)
+  async searchUsers(@Request() req, @Query('q') query: string) {
+    if (req.user.userGroupId !== 4 && req.user.userGroupId !== 3) {
+      throw new HttpException('No tienes permisos', HttpStatus.FORBIDDEN);
+    }
+    return this.appService.searchUsers(query);
+  }
+
+  /**
+   * Banear usuario (admins y moderadores)
+   */
+  @Post('api/moderation/ban')
+  @UseGuards(JwtAuthGuard)
+  async banUser(@Request() req, @Body() data: { userId: number; reason: string }) {
+    if (req.user.userGroupId !== 4 && req.user.userGroupId !== 3) {
+      throw new HttpException('No tienes permisos para banear usuarios', HttpStatus.FORBIDDEN);
+    }
+    return this.appService.banUser(req.user.userId, data.userId, data.reason);
+  }
+
+  /**
+   * Advertir usuario (admins y moderadores)
+   */
+  @Post('api/moderation/warn')
+  @UseGuards(JwtAuthGuard)
+  async warnUser(@Request() req, @Body() data: { userId: number; reason: string }) {
+    if (req.user.userGroupId !== 4 && req.user.userGroupId !== 3) {
+      throw new HttpException('No tienes permisos para advertir usuarios', HttpStatus.FORBIDDEN);
+    }
+    return this.appService.warnUser(req.user.userId, data.userId, data.reason);
+  }
+
+  /**
+   * Suspender usuario (admins y moderadores)
+   */
+  @Post('api/moderation/suspend')
+  @UseGuards(JwtAuthGuard)
+  async suspendUser(@Request() req, @Body() data: { userId: number; days: number; reason: string }) {
+    if (req.user.userGroupId !== 4 && req.user.userGroupId !== 3) {
+      throw new HttpException('No tienes permisos para suspender usuarios', HttpStatus.FORBIDDEN);
+    }
+    return this.appService.suspendUser(req.user.userId, data.userId, data.days, data.reason);
+  }
+
+  /**
+   * Obtener usuarios baneados/suspendidos
+   */
+  @Get('api/moderation/banned')
+  @UseGuards(JwtAuthGuard)
+  async getBannedUsers(@Request() req) {
+    if (req.user.userGroupId !== 4 && req.user.userGroupId !== 3) {
+      throw new HttpException('No tienes permisos', HttpStatus.FORBIDDEN);
+    }
+    return this.appService.getBannedUsers();
+  }
+
+  /**
+   * Desbanear usuario (solo admins)
+   */
+  @Delete('api/moderation/unban/:id')
+  @UseGuards(JwtAuthGuard)
+  async unbanUser(@Request() req, @Param('id', ParseIntPipe) id: number) {
+    if (req.user.userGroupId !== 4) {
+      throw new HttpException('Solo administradores pueden desbanear usuarios', HttpStatus.FORBIDDEN);
+    }
+    return this.appService.unbanUser(id);
   }
 
   /**
